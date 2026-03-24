@@ -3,7 +3,7 @@ const active = (o) => window.location.pathname.replace(/\/$/, '') === o.href.rep
 const rawLinks = [
     { label: 'Home', href: '/' },
     { label: 'System', href: '/system' },
-    { label: 'Docs', href: '/docs' }
+    { label: 'Files', href: '/files' },
 ];
 
 const links = rawLinks.map(link => ({

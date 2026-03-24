@@ -65,7 +65,7 @@ const bytesToHimanReadable = (bytes) => {
         <p>${bytesToHimanReadable(drive.diskSpace.free)} free of ${bytesToHimanReadable(drive.diskSpace.size)}</p>
         <canvas id="drive-chart-${drive.name}" width="400" height="200"></canvas>
         <button onclick="window.open('/drives/${drive.name}', '_blank')">View Details</button>
-        <button onclick="window.open('/drives/${drive.name}/files', '_blank')">View Files</button>
+        <button onclick="window.open('/files?drive=${drive.name}', '_blank')">View Files</button>
       `;
       const chart = new Chart(driveCard.querySelector('canvas').getContext('2d'), {
         type: 'doughnut',

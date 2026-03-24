@@ -1,0 +1,156 @@
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <script src="../nav.js"></script>
+    <link rel="stylesheet" href="../icons.css">
+      <link href="./icons.css" rel="stylesheet">
+</head>
+<style>
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+li {
+    padding: 12px 16px;
+    cursor: pointer;
+
+    /* Glass feel without background */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    
+    /* Subtle blur to interact with parent background */
+
+    /* Smooth transitions */
+    transition: all 0.25s ease;
+
+    /* Slight rounding for modern look */
+    border-radius: 8px;
+}
+
+/* Hover effect */
+li:hover {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    transform: translateX(4px);
+
+    /* very subtle highlight without full background */
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+/* Optional: last item cleanup */
+li:last-child {
+    border-bottom: none;
+}
+
+select{
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(229, 229, 229, 0.305) !important;
+    color: #000;
+    transition: all 0.25s ease;
+    outline: none;
+    float: right;
+    margin-right: 10px;
+}
+</style>
+
+<body>
+<nav-bar>
+</nav-bar>
+    <div class="dashboard-grid">
+
+    </div>
+<br><br>
+    <div class="card">
+        <h2>File Explorer
+        <select id="drive-select" onchange="location.href = '?drive=' + this.value + '&path=' + encodeURIComponent('/')">
+            <option id="sel" value="">Select a drive</option>
+        </select>
+        </h2>
+        <ul>
+        </ul>
+    </div>
+</body>
+<script>
+const bytesToHumanReadable = (bytes) => {
+    if (bytes === 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + units[i];
+};
+
+window.onload = async () => {
+    const params = new URLSearchParams(window.location.search);
+    const currentDrive = params.get('drive');
+    const currentPath = params.get('path') || '/';
+
+    // 1. Load Drives
+    const drivesReq = await fetch('/drives');
+    const drivesData = await drivesReq.json();
+    const driveSelect = document.getElementById('drive-select');
+    
+    drivesData.drives.forEach(drive => {
+        const option = document.createElement('option');
+        option.value = drive.name;
+        option.textContent = drive.name;
+        if(currentDrive === drive.name) option.selected = true;
+        driveSelect.appendChild(option);
+    });
+
+    if(!currentDrive) return;
+
+    // 2. Load Files
+    const req = await fetch(`/files/json?drive=${currentDrive}&path=${encodeURIComponent(currentPath)}`);
+    const data = await req.json();
+    const ul = document.querySelector('.card ul');
+
+    // Add ".." (Go Back) entry if not in root
+    if (currentPath !== '/' && currentPath !== '.') {
+        const backLi = document.createElement('li');
+        backLi.innerHTML = `<strong>📁 .. (Go Back)</strong>`;
+        backLi.onclick = () => {
+            const parts = currentPath.split('/').filter(Boolean);
+            parts.pop();
+            const parentPath = '/' + parts.join('/');
+            location.href = `?drive=${currentDrive}&path=${encodeURIComponent(parentPath)}`;
+        };
+        ul.appendChild(backLi);
+    }
+
+    data.files.forEach(file => {
+        const fileLi = document.createElement('li');
+        const icon = file.isDirectory ? '📁' : '📄';
+        const info = file.isDirectory ? 'Directory' : bytesToHumanReadable(file.size);
+        
+        fileLi.innerHTML = `
+            <span>${icon} <strong>${file.name}</strong></span>
+            <span style="float:right; font-size: 0.8em; opacity: 0.7;">
+            ${info} | ${new Date(file.modified).toLocaleDateString()}
+            ${!file.isDirectory ? `<i class="material-symbols-rounded" onclick="event.stopPropagation();download('${currentDrive}', '${encodeURIComponent(file.path)}')" style="font-size: 1.2em; margin-left: 8px; opacity: 0.6;">download</i>` : ''}
+            ${!file.isDirectory ? `<i class="material-symbols-rounded" onclick="event.stopPropagation();window.open('/files/raw?drive=${currentDrive}&path=${encodeURIComponent(file.path)}', '_blank');" style="font-size: 1.2em; margin-left: 8px; opacity: 0.6;">open_in_new</i>` : ''}
+            </span>
+        `;
+
+        fileLi.onclick = () => {
+            if(file.isDirectory) {
+                // Navigate into the folder path provided by the server
+                location.href = `?drive=${currentDrive}&path=${encodeURIComponent(file.path)}`;
+            } else {
+                // Open file in new tab
+                location.href = `/files?drive=${currentDrive}&path=${encodeURIComponent(file.path)}`;
+            }
+        };
+        ul.appendChild(fileLi);
+    });
+};
+
+const download = (drive, path) => {
+    const link = document.createElement('a');
+    link.href = `/files/raw?drive=${drive}&path=${path}`;
+    link.download = decodeURIComponent(path).split('/').pop();
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
+</script>
