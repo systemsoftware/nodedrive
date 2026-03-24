@@ -1,0 +1,93 @@
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <script src="../nav.js"></script>
+</head>
+<style>
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: none;
+  }
+
+  .card {
+  padding: 20px;
+  border-radius: 15px;
+  max-height: 450px; /* Limits the card height */
+  overflow: hidden;
+}
+
+.card canvas {
+  max-width: 100%;
+  max-height: 200px !important; /* Limits the chart height */
+}
+
+button{
+    margin-top: 10px;
+    width: 49%;
+}
+</style>
+
+<body>
+<nav-bar>
+</nav-bar>
+    <div class="dashboard-grid">
+
+    </div>
+</body>
+<script>
+
+const bytesToHimanReadable = (bytes) => {
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let i = 0;
+    while (bytes >= 1024 && i < units.length - 1) {
+        bytes /= 1024;
+        i++;
+    }
+    return `${bytes.toFixed(2)} ${units[i]}`;
+};
+
+  window.onload = async () => {
+    const req = await fetch('/drives');
+    const data = await req.json();
+    const grid = document.querySelector('.dashboard-grid');
+
+    data.drives.forEach(drive => {
+      const driveCard = document.createElement('div');
+      driveCard.classList.add('card');
+      driveCard.innerHTML = `
+        <h2>${drive.name}</h2>
+        <p>Path: ${drive.drivePath} (${drive.diskSpace.diskPath})</p>
+        <p>${bytesToHimanReadable(drive.diskSpace.free)} free of ${bytesToHimanReadable(drive.diskSpace.size)}</p>
+        <canvas id="drive-chart-${drive.name}" width="400" height="200"></canvas>
+        <button onclick="window.open('/drives/${drive.name}', '_blank')">View Details</button>
+        <button onclick="window.open('/drives/${drive.name}/files', '_blank')">View Files</button>
+      `;
+      const chart = new Chart(driveCard.querySelector('canvas').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Used', 'Free'],
+          datasets: [{
+            data: [drive.diskSpace.size - drive.diskSpace.free, drive.diskSpace.free],
+            backgroundColor: ['#e74c3c', '#2ecc71']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+      grid.appendChild(driveCard);
+    });
+  };
+
+
+</script>

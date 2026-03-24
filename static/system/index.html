@@ -1,0 +1,128 @@
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <script src="../nav.js"></script>
+</head>
+<style>
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: none;
+  }
+</style>
+
+<body>
+<nav-bar>
+</nav-bar>
+    <div class="dashboard-grid">
+  <div class="card">
+    <h2>CPU Load (Avg)</h2>
+    <p style="font-size: 0.9rem; color: #636e72; margin-bottom: 10px;">Average CPU load across all cores. Current: <span id="latestCpuLoad">--</span>%</p>
+    <canvas id="cpuAvgChart"></canvas>
+  </div>
+  <div class="card">
+    <h2>Memory Usage (Used GB)</h2>
+    <p style="font-size: 0.9rem; color: #636e72; margin-bottom: 10px;">Amount of used memory in GB. Current: <span id="latestMemUsed">--</span> GB</p>
+    <canvas id="memChart"></canvas>
+  </div>
+  <div class="card">
+    <h2>CPU Temperature (°C)</h2>
+    <p style="font-size: 0.9rem; color: #636e72; margin-bottom: 10px;">Current CPU temperature in °C. Current: <span id="latestCpuTemp">--</span> °C</p>
+    <canvas id="cpuTempChart"></canvas>
+  </div>
+  <div class="card" style="grid-column: 1 / -1;">
+    <h2>Individual Core Load (%)</h2>
+    <canvas id="coresChart"></canvas>
+  </div>
+</div>
+<p style="text-align: center; margin-top: 20px; font-size: 0.8rem; color: #636e72;">Current data is as current as possible. New data added to charts <span id="updateevery">unknown seconds</span>. <a href="/systemhealth" target="_blank">View raw data</a> or <a href="/updatehealth">force update</a>.</p>
+</body>
+<script>
+  window.onload = async () => {
+    const req = await fetch('/systemhealth');
+    const data = await req.json();
+
+    const labels = Object.keys(data.cpu).map(key => new Date(key).toLocaleTimeString());
+
+    document.getElementById('latestCpuLoad').textContent = data.latest.cpu.toFixed(2);
+    document.getElementById('latestMemUsed').textContent = (data.latest.memory / 1024 / 1024 / 1024).toFixed(2);
+    document.getElementById('latestCpuTemp').textContent = data.latest.cpuTemp?.toFixed(2) || 'N/A';
+
+    document.getElementById('updateevery').textContent = data.latest.updateEvery;
+
+    // 1. CPU Average Chart
+    new Chart(document.getElementById('cpuAvgChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Avg Load',
+          data: Object.values(data.cpu).map(e => e.avgLoad * 100),
+          borderColor: '#0984e3',
+          backgroundColor: 'rgba(9, 132, 227, 0.2)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: { plugins: { legend: { display: false } } }
+    });
+
+    new Chart(document.getElementById('memChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Used GB',
+          data: Object.values(data.memory).map(e => (e.total - e.free) / 1024 / 1024 / 1024),
+          backgroundColor: 'rgba(255, 255, 255, 0.6)',
+          borderRadius: 5
+        }],
+      },
+      options: { plugins: { legend: { display: false } } }
+    });
+
+    let coreDatasets = [];
+    const coreCount = data.cpu[Object.keys(data.cpu)[0]].cpus.length;
+    for (let i = 0; i < coreCount; i++) {
+      coreDatasets.push({
+        label: `Core ${i}`,
+        data: Object.values(data.cpu).map(e => e.cpus[i]),
+        borderColor: `hsl(${(i / coreCount) * 360}, 70%, 50%)`,
+        backgroundColor: `hsla(${(i / coreCount) * 360}, 70%, 50%, 0.2)`,
+        fill: true,
+        tension: 0.4
+      });
+    }
+
+    new Chart(document.getElementById('coresChart'), {
+      type: 'line',
+      data: { labels: labels, datasets: coreDatasets },
+      options: { 
+        responsive: true,
+        scales: { y: { beginAtZero: true, max: 100 } }
+      }
+    });
+
+    new Chart(document.getElementById('cpuTempChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'CPU Temp (°C)',
+          data: Object.values(data.cpu).map(e => e.cpuTemp),
+          borderColor: '#d63031',
+          backgroundColor: 'rgba(214, 48, 49, 0.2)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: { plugins: { legend: { display: false } } }
+    });
+  };
+
+
+</script>

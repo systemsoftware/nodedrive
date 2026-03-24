@@ -1,0 +1,33 @@
+const readline = require('readline');
+const bcrypt = require('bcrypt');
+
+const { users:db } = require('../../db');
+
+module.exports = {
+    name: "create",
+    description: "Create a new user",
+    usage: "create <username>",
+    async execute(args) {
+            const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        });
+        const question = (query) => new Promise(resolve => rl.question(query, resolve));
+        const username = await question('Username: ');
+        const password = await question('Password: ');
+        const readPermissions = (await question('Read permissions (Y/N): ')).trim().toLowerCase() === 'y';
+        const writePermissions = (await question('Write permissions (Y/N): ')).trim().toLowerCase() === 'y';
+        const role = await question('Role (admin/user): ');
+        rl.close();
+        const hashedPassword = bcrypt.hashSync(password, 10);
+        await db.create(username, {
+            password: hashedPassword,
+            permissions: {
+                read: readPermissions,
+                write: writePermissions
+            },
+            role: role
+        });
+        console.log(`User ${username} created.`);
+    }
+}
