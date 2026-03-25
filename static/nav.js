@@ -4,6 +4,7 @@ const rawLinks = [
     { label: 'Home', href: '/' },
     { label: 'System', href: '/system' },
     { label: 'Files', href: '/files' },
+    { label: 'Trash', href: '/trash' },
 ];
 
 const links = rawLinks.map(link => ({

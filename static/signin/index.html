@@ -49,6 +49,7 @@
 </html>
 
 <script>
+  const params = new URLSearchParams(window.location.search);
   document.querySelector('form button').addEventListener('click', async () => {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
@@ -61,7 +62,7 @@
     });
 
     if (res.ok) {
-      window.location.href = '/';
+      window.location.href = decodeURIComponent(params.get('redirect') || '%2F');
     } else {
       alert('Invalid credentials. Please try again.');
     }

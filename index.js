@@ -53,11 +53,12 @@ app.use((req, res, next) => {
         info(`${req.method} request to ${fullPath} from ${req.hostname}`);
     }
 
-    // ✅ allow public + static
     if (
         req.path.startsWith('/signin') ||
         req.path.includes('.') ||
-        req.path.startsWith('/api') // optional
+        req.path.startsWith('/api') ||
+        req.path.includes('shared') ||
+        req.path.includes('/s/')
     ) {
         return next();
     }
@@ -71,6 +72,19 @@ app.use((req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
+
+        const newToken = jwt.sign(
+            { ...decoded },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' } 
+        );
+
+        res.cookie('token', newToken, {
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production'
+        });
+
         next();
     } catch (err) {
         if (advancedLogging) error(err);
@@ -78,7 +92,6 @@ app.use((req, res, next) => {
         return res.redirect('/signin?redirect=' + encodeURIComponent(req.originalUrl));
     }
 });
-
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -132,7 +145,6 @@ require('./tracksystemhealth.js').init();
 
 app.use(express.static('static'));
 
-app.use(require('./rollingtokenrefresh.js'));
 
 app.get('/*', (req, res) => {
     res.sendFile(path.join(__dirname, '404.html'));

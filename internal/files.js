@@ -4,6 +4,43 @@ const fs = require('fs/promises');
 const { createReadStream } = require('fs');
 const { drives, users } = require('../db');
 const pth = require('path');
+const multer = require('multer');
+const crypto = require('crypto');
+
+const createShareId = (data) => {
+    const payload = Buffer.from(JSON.stringify(data)).toString('base64url');
+
+    const signature = crypto
+        .createHmac('sha256', process.env.ID_SECRET)
+        .update(payload)
+        .digest('hex');
+
+    return `${payload}.${signature}`;
+};
+
+const decodeShareId = (token) => {
+    const [payload, signature] = token.split('.');
+
+    const expectedSig = crypto
+        .createHmac('sha256', process.env.ID_SECRET)
+        .update(payload)
+        .digest('hex');
+
+    if (signature !== expectedSig) return null;
+
+    return JSON.parse(Buffer.from(payload, 'base64url').toString());
+};
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+
+const upload = multer({ storage });
 
 const router = Router();
 
@@ -66,6 +103,11 @@ router.get('/files/raw', async (req, res) => {
     const { path: reqPath, drive } = req.query;
     try {
         const fullPath = await getSafePath(drive, reqPath);
+        try{
+            fs.access(fullPath);
+        } catch {
+            return res.status(404).json({ error: 'File not found' });
+        }
         const readStream = createReadStream(fullPath);
         readStream.pipe(res);
     } catch (err) {
@@ -73,4 +115,111 @@ router.get('/files/raw', async (req, res) => {
     }
 });
 
+router.post('/files/upload', upload.single('file'), async (req, res) => {
+    const { drive, path: uploadPath } = req.body;
+    const file = req.file;
+
+    info(`Upload Attempt: User=${req.user.username}, Drive=${drive}, Path=${uploadPath}, File=${file ? file.originalname : 'No file'}`);
+
+    if (!file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    try {
+        const fullPath = await getSafePath(drive, uploadPath);
+        await fs.mkdir(fullPath, { recursive: true });
+        await fs.rename(file.path, pth.join(fullPath, file.originalname));
+        res.json({ message: 'File uploaded successfully' });
+    } catch (err) {
+        error(`Upload Error: ${err.message}`);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.post('/files/share', async (req, res) => {
+    const { path: reqPath, drive, expiresin } = req.body;
+
+    try {
+        await getSafePath(drive, reqPath);
+
+        const shareId = createShareId({
+            drive,
+            path: reqPath,
+            expiresAt: Date.now() + (parseInt(expiresin) || 3600000)
+        });
+
+        res.json({ shareId });
+    } catch (err) {
+        res.status(404).json({ error: 'File not found' });
+    }
+});
+
+const sharedHandler = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const data = decodeShareId(id);
+        console.log(data);
+        if (!data) {
+            return res.status(400).json({ error: 'Invalid share ID' });
+        }
+        if (Date.now() > data.expiresAt) {
+            return res.status(410).json({ error: 'Share link has expired' });
+        }
+        const fullPath = await getSafePath(data.drive, data.path);
+        try{
+            fs.access(fullPath);
+        } catch {
+            return res.status(404).json({ error: 'File not found' });
+        }
+        const readStream = createReadStream(fullPath);
+        readStream.pipe(res);
+    } catch (err) {
+        res.status(400).json({ error: 'Invalid share ID' });
+    }
+}
+
+router.get('/shared/:id', sharedHandler);
+router.get('/s/:id', sharedHandler);
+
+
+router.post('/file/rename', async (req, res) => {
+    const { drive, path: oldPath, newName } = req.body;
+
+    try {
+        const fullOldPath = await getSafePath(drive, oldPath);
+        const newPath = pth.join(pth.dirname(fullOldPath), newName);
+        await fs.rename(fullOldPath, newPath);
+        res.json({ message: 'File renamed successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.post('/file/mkdir', async (req, res) => {
+    const { drive, path: dirPath } = req.body;
+
+    try {
+        const fullPath = await getSafePath(drive, dirPath);
+        await fs.mkdir(fullPath, { recursive: true });
+        res.json({ message: 'Directory created successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.post('/file/move', async (req, res) => {
+    const { drive, path: oldPath, newPath } = req.body;
+
+    try {
+        const fullOldPath = await getSafePath(drive, oldPath);
+        const fullNewPath = await getSafePath(drive, newPath);
+        await fs.rename(fullOldPath, fullNewPath);
+        res.json({ message: 'File moved successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;
+
+module.exports.getSafePath = getSafePath;

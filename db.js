@@ -35,6 +35,12 @@ const systemHealthDb = new dubnium(`${path}/system_health`, {
     trash:false
 });
 
+const trashDb = new dubnium(`${path}/trash`, {
+    metadata:false,
+    versioning:{ enabled: false },
+    trash:false
+});
+
 if(process.env.STARTED) success('Database initialized successfully.');
 
 module.exports = {
@@ -43,5 +49,6 @@ module.exports = {
     permissions: permDb,
     drives: drivesDb,
     systemHealth: systemHealthDb,
+    trash: trashDb,
     path: path
 };

@@ -58,31 +58,15 @@ select{
 <body>
 <nav-bar>
 </nav-bar>
+    <div class="dashboard-grid">
 
+    </div>
 <br><br>
-<div id="custom-menu" class="context-menu">
-  <ul>
-    <li onclick="ctx_download()">Download</li>
-    <li onclick="ctx_open()">Open in new tab</li>
-    <hr>
-    <li onclick="ctx_share()">Copy share link</li>
-    <li onclick="ctx_copy_path()">Copy URL</li>
-    <hr>
-    <li onclick="ctx_rename()" id="renameb">Rename</li>
-    <li onclick="ctx_move()" id="moveb">Move</li>
-    <hr>
-    <li style="color: red;" id="deleteb" onclick="ctx_delete()">Delete</li>
-  </ul>
-</div>
-
-
     <div class="card">
-        <h2><span id="title">File Explorer</span>
-            <input type="file" id="file-input" style="display:none" onchange="uploadFile(event)" />
+        <h2><span id="title">Trash Bin</span>
         <select id="drive-select" onchange="location.href = '?drive=' + this.value + '&path=' + encodeURIComponent('/')">
             <option id="sel" value="">Select a drive</option>
         </select>
-        <i class="material-symbols-rounded" onclick="upload()" id="uploadb" style="cursor: pointer;float: right;margin-top: 5px;margin-right: 10px;">upload</i>
         <i class="material-symbols-rounded" onclick="search()" id="searchb" style="cursor: pointer;float: right;margin-top: 5px;margin-right: 10px;">search</i>
         </h2>
         <ul>
@@ -96,8 +80,6 @@ const bytesToHumanReadable = (bytes) => {
     let i = Math.floor(Math.log(bytes) / Math.log(1024));
     return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + units[i];
 };
-
-let selPath = '';
 
 let showHidden = false;
 const toggleHidden = () => {
@@ -125,12 +107,6 @@ window.onload = async () => {
 
     if(!myPerms.write){
         document.getElementById('uploadb').style.display = 'none';
-        document.getElementById('renameb').style.display = 'none';
-        document.getElementById('moveb').style.display = 'none';
-    }
-
-    if(!myPerms.delete){
-        document.getElementById('deleteb').style.display = 'none';
     }
     
     drivesData.drives.forEach(drive => {
@@ -149,7 +125,7 @@ window.onload = async () => {
     }
 
     // 2. Load Files
-    const req = await fetch(`/files/json?drive=${currentDrive}&path=${encodeURIComponent(currentPath)}`);
+    const req = await fetch(`/trash/json?drive=${currentDrive}&path=${encodeURIComponent(currentPath)}`);
     const data = await req.json();
     const ul = document.querySelector('.card ul');
 
@@ -166,85 +142,31 @@ window.onload = async () => {
         ul.appendChild(backLi);
     }
 
-    data.files.filter(e => !e.name.includes('.trash')).forEach(file => {
+    data.files.forEach(file => {
         const fileLi = document.createElement('li');
         const icon = file.isDirectory ? '📁' : '📄';
         const info = file.isDirectory ? 'Directory' : bytesToHumanReadable(file.size);
+        fileLi.id = file.name;
         
         fileLi.innerHTML = `
             <span>${icon} <strong>${file.name}</strong></span>
             <span style="float:right; font-size: 0.8em; opacity: 0.7;">
             ${info} | ${new Date(file.modified).toLocaleDateString()}
+            ${myPerms.delete ? `<i class="material-symbols-rounded" onclick="event.stopPropagation();if(confirm('Are you sure you want to delete ${file.name}?')){fetch('/trash/restore', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({drive: '${currentDrive}', path: '${file.path}'})}).then(() => location.reload());}" style="font-size: 1.2em; margin-left: 8px; opacity: 0.6;">restore</i>` : ''}
+            ${myPerms.delete ? `<i class="material-symbols-rounded" onclick="event.stopPropagation();if(confirm('Are you sure you want to delete ${file.name}?')){fetch('/files/rm', {method: 'DELETE', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({drive: '${currentDrive}', path: '${file.path}'})}).then(() => location.reload());}" style="font-size: 1.2em; margin-left: 8px; opacity: 0.6;">delete</i>` : ''}
             </span>
         `;
 
         if(fileLi.textContent.trim().startsWith('.')) {
             fileLi.style.display = 'none';
         }
-
-        fileLi.onclick = () => {
-            if(file.isDirectory) {
-                location.href = `?drive=${currentDrive}&path=${encodeURIComponent(file.path)}`;
-            } else {
-                location.href = `/files/raw?drive=${currentDrive}&path=${encodeURIComponent(file.path)}`;
-            }
-        };
-
-fileLi.addEventListener('contextmenu', (e) => {
-  e.preventDefault();
-  
-  selPath = file.path;
-  
-  menu.style.top = `${e.pageY}px`;
-  menu.style.left = `${e.pageX}px`;
-  menu.style.display = 'block';
-});
-
-document.addEventListener('click', () => {
-  menu.style.display = 'none';
-});
-
-
         ul.appendChild(fileLi);
     });
-};
-
-const download = (drive, path) => {
-    const link = document.createElement('a');
-    link.href = `/files/raw?drive=${drive}&path=${path}`;
-    link.download = decodeURIComponent(path).split('/').pop();
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
 };
 
 const upload = () => {
     document.getElementById('file-input').click();
 };
-
-const uploadFile = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const params = new URLSearchParams(window.location.search);
-    const currentDrive = params.get('drive');
-    const currentPath = params.get('path') || '/';
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('drive', currentDrive);
-    formData.append('path', currentPath);
-
-    await fetch('/files/upload', {
-        method: 'POST',
-        body: formData
-    });
-
-    // Refresh the page after upload
-    location.reload();
-};
-
-document.getElementById('file-input').addEventListener('change', uploadFile);
 
 const searchb = document.getElementById('searchb');
 
@@ -267,7 +189,7 @@ const search = (q) => {
 
 const undoSearch = () => {
     const ul = document.querySelector('.card ul');
-    document.getElementById('title').textContent = 'File Explorer';
+    document.getElementById('title').textContent = 'Trash Bin';
     document.getElementById('searchb').onclick = search;
     document.getElementById('searchb').textContent = 'search';
     Array.from(ul.children).forEach(li => {
@@ -280,108 +202,5 @@ if(window.location.search.includes('search=')) {
     const query = params.get('search');
     search(query);
 }
-
-async function shareFile(drive, path) {
-    try {
-        let expiresin = prompt('Share link expiration in seconds (default 3600):');
-
-        // sanitize input
-        expiresin = parseInt(expiresin);
-        if (isNaN(expiresin) || expiresin <= 0) {
-            expiresin = 3600;
-        }
-
-        const res = await fetch('/files/share', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ drive, path, expiresin })
-        });
-
-        if (!res.ok) {
-            throw new Error('Failed to create share link');
-        }
-
-        const data = await res.json();
-
-        if (!data.shareId) {
-            throw new Error('Invalid response from server');
-        }
-
-        const url = `${window.location.origin}/s/${data.shareId}`;
-
-        setTimeout(async () => {
-            
-        try {
-            await navigator.clipboard.writeText(url);
-            alert(`Share link copied to clipboard! Link: ${url}`);
-        } catch (err) {
-            console.error(err);
-                    alert(`Share link: ${url}`);
-        }
-        }, 500);
-    } catch (err) {
-        console.error(err);
-        alert('Error creating share link');
-    }
-}
-
-const menu = document.getElementById('custom-menu');
-
-const currentDrive = new URLSearchParams(window.location.search).get('drive');
-
-const ctx_delete = () => {
-    if(confirm('Are you sure you want to delete this file?')) {
-        fetch('/file', {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ drive: currentDrive, path: selPath })
-        }).then(() => location.reload());
-    }
-};
-
-const ctx_share = () => {
-    shareFile(currentDrive, selPath);
-};
-
-const ctx_download = () => {
-    download(currentDrive, selPath);
-};
-
-const ctx_rename = () => {
-    const newName = prompt('Enter new name:');
-    if (!newName) return;
-
-    fetch('/file/rename', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ drive: currentDrive, path: selPath, newName })
-    }).then(() => location.reload());
-};
-
-const ctx_move = () => {
-    const newPath = prompt('Enter new path (excluding filename):');
-    if (!newPath) return;
-
-    fetch('/file/move', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ drive: currentDrive, path: selPath, newPath })
-    }).then(() => location.reload());
-};
-
-const ctx_copy_path = () => {
-    const fullPath = location.origin + `/files/raw?drive=${currentDrive}&path=${encodeURIComponent(selPath)}`;
-    navigator.clipboard.writeText(fullPath).then(() => {
-        alert(`Path copied to clipboard: ${fullPath}`);
-    }).catch(err => {
-        console.error(err);
-        alert(`Failed to copy path. Path: ${fullPath}`);
-    });
-};
-
-const ctx_open = () => {
-    const url = location.origin + `/files/raw?drive=${currentDrive}&path=${encodeURIComponent(selPath)}`;
-    window.open(url, '_blank');
-};
 
 </script>
