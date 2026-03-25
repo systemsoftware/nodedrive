@@ -64,13 +64,13 @@ select{
   <ul>
     <li onclick="ctx_download()">Download</li>
     <li onclick="ctx_open()">Open in new tab</li>
-    <hr>
+    <hr id="opnhr">
     <li onclick="ctx_share()">Copy share link</li>
     <li onclick="ctx_copy_path()">Copy URL</li>
-    <hr>
+    <hr id="edhr">
     <li onclick="ctx_rename()" id="renameb">Rename</li>
     <li onclick="ctx_move()" id="moveb">Move</li>
-    <hr>
+    <hr id="delhr">
     <li style="color: red;" id="deleteb" onclick="ctx_delete()">Delete</li>
   </ul>
 </div>
@@ -127,10 +127,12 @@ window.onload = async () => {
         document.getElementById('uploadb').style.display = 'none';
         document.getElementById('renameb').style.display = 'none';
         document.getElementById('moveb').style.display = 'none';
+        document.getElementById('edhr').style.display = 'none';
     }
 
     if(!myPerms.delete){
         document.getElementById('deleteb').style.display = 'none';
+        document.getElementById('delhr').style.display = 'none';
     }
     
     drivesData.drives.forEach(drive => {

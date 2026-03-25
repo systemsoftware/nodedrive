@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<link rel="stylesheet" href="/style.css">
+    <script src="/nav.js"></script>
+    <title>Error</title>
+  <style>
+
+body{
+    overflow: hidden;
+}
+
+.card{
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+}
+
+button{
+    width: 48%;
+}
+
+
+  </style>
+</head>
+<body>
+    <nav-bar>
+    </nav-bar>
+  <div class="card">
+    <h2>Error</h2>
+    <p>%error%</p>
+    <button onclick="window.history.back()">Go Back</button>
+    <button onclick="window.location.href='/'">Go Home</button>
+  </div>
+</body>

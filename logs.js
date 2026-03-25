@@ -1,3 +1,5 @@
+const { readFileSync } = require('fs');
+
 module.exports.original = {
     error: console.error,
     warn: console.warn,
@@ -46,4 +48,10 @@ module.exports.warn = (...msgs) => {
 
 module.exports.special = (...msgs) => {
     console.log(`\x1b[35m${msgs.join(' ')}\x1b[0m`);
+}
+
+const errPage = readFileSync(`${__dirname}/err.html`, 'utf-8');
+
+module.exports.pageError = (res, msg='An error occurred', code=500) => {
+    res.status(code).send(errPage.replace('%error%', msg));
 }

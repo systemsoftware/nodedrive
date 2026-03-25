@@ -8,7 +8,7 @@ const getContrastTextColor = require('./contrast.js');
 
 let styling = fs.readFileSync('./style.css', 'utf-8');
 
-const { info, error, success, warn, APIError, special, APIResponseError } = require('./logs');
+const { info, error, success, warn, APIError, special, APIResponseError, pageError } = require('./logs');
 
 const PORT = process.env.PORT || 80;
 
@@ -55,8 +55,9 @@ app.use((req, res, next) => {
 
     if (
         req.path.startsWith('/signin') ||
-        req.path.includes('.') ||
         req.path.startsWith('/api') ||
+        req.path.includes('.css') ||
+        req.path.includes('jpeg') ||
         req.path.includes('shared') ||
         req.path.includes('/s/')
     ) {
@@ -75,8 +76,7 @@ app.use((req, res, next) => {
 
         const newToken = jwt.sign(
             { ...decoded },
-            process.env.JWT_SECRET,
-            { expiresIn: '7d' } 
+            process.env.JWT_SECRET
         );
 
         res.cookie('token', newToken, {
@@ -147,7 +147,7 @@ app.use(express.static('static'));
 
 
 app.get('/*', (req, res) => {
-    res.sendFile(path.join(__dirname, '404.html'));
+pageError(res, 'The page you are looking for does not exist', 404);
 })
 
 app.listen(PORT, () => {
