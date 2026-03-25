@@ -18,6 +18,7 @@
 <body>
 <nav-bar>
 </nav-bar>
+<h2 style="text-align: center; margin-top: 20px;margin-bottom: -15px;" id="head">System Health Dashboard</h2>
     <div class="dashboard-grid">
   <div class="card">
     <h2>CPU Load (Avg)</h2>
@@ -34,14 +35,50 @@
     <p style="font-size: 0.9rem; color: #636e72; margin-bottom: 10px;">Current CPU temperature in °C. Current: <span id="latestCpuTemp">--</span> °C</p>
     <canvas id="cpuTempChart"></canvas>
   </div>
-  <div class="card" style="grid-column: 1 / -1;">
+        <div class="card" style="grid-column: 1 / -1;">
+    <h2>Network Speed</h2>
+    <p id="networkStats" style="font-size: 0.9rem; color: #636e72; margin-bottom: 10px;">Loading network data...</p>
+    <h3 id="rx_sec_h3">Received</h3>
+    <p id="rx_sec_p" style="font-size: 0.9rem; color: #636e72; margin-top: 20px;">rx_sec is the current download speed in bytes per second.</p>
+    <canvas id="networkChartR"></canvas>
+    <h3>Total</h3>
+    <p style="font-size: 0.9rem; color: #636e72; margin-top: 20px;">rx_bytes is the total amount of data received since the system started, in bytes.</p>
+    <canvas id="networkChartT"></canvas>
+  </div>
+      <div class="card" style="grid-column: 1 / -1;">
     <h2>Individual Core Load (%)</h2>
     <canvas id="coresChart"></canvas>
   </div>
+      <div class="card">
+      <h2>System Uptime</h2>
+      <p style="font-size: 0.9rem; color: #636e72; margin-bottom: 10px;">
+      <strong>OS Uptime:</strong> <span id="uptimeOs">--</span><br>
+      </p>
+    </div>
+    <div class="card">
+      <h2>Process Uptime</h2>
+      <p style="font-size: 0.9rem; color: #636e72; margin-bottom: 10px;">
+      <strong>Process Uptime:</strong> <span id="uptimeProcess">--</span><br>
+      </p>
+    </div>
+        <div class="card">
+      <h2>System Info</h2>
+      <p style="font-size: 0.9rem; color: #636e72; margin-bottom: 10px;">
+      <span id="systemName">--</span><br>
+      </p>
+    </div>
 </div>
-<p style="text-align: center; margin-top: 20px; font-size: 0.8rem; color: #636e72;">Current data is as current as possible. New data added to charts <span id="updateevery">unknown seconds</span>. <a href="/systemhealth" target="_blank">View raw data</a> or <a href="/updatehealth">force update</a>.</p>
+<p style="text-align: center; margin-top: 20px; font-size: 0.8rem; color: #636e72;">Current data is as current as possible. New data added to charts <span id="updateevery">unknown seconds</span>. <a href="/systemhealth" target="_blank">View raw data</a> or <a href="/updatehealth">force update</a>. Data is lost on server restart and provided by <a href="https://npmjs.com/systeminformation" target="_blank">systeminformation</a>.</p><br>
 </body>
 <script>
+
+  const secondsToTime = (seconds) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${hrs}h ${mins}m ${secs}s`;
+  };
+
   window.onload = async () => {
     const req = await fetch('/systemhealth');
     const data = await req.json();
@@ -54,7 +91,81 @@
 
     document.getElementById('updateevery').textContent = data.latest.updateEvery;
 
-    // 1. CPU Average Chart
+    document.getElementById('head').textContent = `${data.latest.system}`;
+
+    document.getElementById('uptimeOs').textContent = secondsToTime(data.latest.uptime.os);
+    document.getElementById('uptimeProcess').textContent = secondsToTime(data.latest.uptime.process);
+
+    document.getElementById('systemName').textContent = data.latest.system;
+
+    console.log(data)
+
+   if(!Object.values(data.latest.network || {}).find(n => n.rx_sec)){
+     document.getElementById('networkChartR').style.display = 'none';
+     document.getElementById('rx_sec_h3').style.display = 'none';
+     document.getElementById('rx_sec_p').style.display = 'none';
+   }
+
+   const net = Object.values(data.latest.network || {}).find(n => n.rx_sec);
+
+    document.getElementById('networkStats').innerHTML = net ? `
+      <strong>Interface:</strong> ${Object.keys(data.latest.network).find(key => data.latest.network[key].rx_sec === net.rx_sec)}<br>
+      <strong>Download:</strong> ${(net.rx_sec / 1024).toFixed(2)} KB/s<br>
+      <strong>Upload:</strong> ${(net.tx_sec / 1024).toFixed(2)} KB/s
+    ` : 'No network data available';
+
+    new Chart(document.getElementById('networkChartR'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Download (KB/s)',
+            data: Object.values(data.networkSpeed || {}).map(n => n.rx_sec ? n.rx_sec / 1024 : null).filter(n => n !== null),
+            borderColor: '#00b894',
+            backgroundColor: 'rgba(0, 184, 148, 0.2)',
+            fill: true,
+            tension: 0.4
+          },
+          {
+            label: 'Upload (KB/s)',
+            data: Object.values(data.networkSpeed || {}).map(n => n.tx_sec ? n.tx_sec / 1024 : null).filter(n => n !== null),
+            borderColor: '#fd79a8',
+            backgroundColor: 'rgba(253, 121, 168, 0.2)',
+            fill: true,
+            tension: 0.4
+          }
+        ]
+      },
+      options: { plugins: { legend: { display: true } } }
+    });
+
+    new Chart(document.getElementById('networkChartT'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Total Download (GB)',
+            data: Object.values(data.networkSpeed || {}).map(n => n.rx_bytes ? n.rx_bytes / 1024 / 1024 / 1024 : null),
+            borderColor: '#0984e3',
+            backgroundColor: 'rgba(9, 132, 227, 0.2)',
+            fill: true,
+            tension: 0.4
+          },
+          {
+            label: 'Total Upload (GB)',
+            data: Object.values(data.networkSpeed || {}).map(n => n.tx_bytes ? n.tx_bytes / 1024 / 1024 / 1024 : null),
+            borderColor: '#d63031',
+            backgroundColor: 'rgba(214, 48, 49, 0.2)',
+            fill: true,
+            tension: 0.4
+          }
+        ]
+      },
+      options: { plugins: { legend: { display: true } } }
+    });
+
     new Chart(document.getElementById('cpuAvgChart'), {
       type: 'line',
       data: {

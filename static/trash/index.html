@@ -171,7 +171,7 @@ const upload = () => {
 const searchb = document.getElementById('searchb');
 
 const search = (q) => {
-    const query = q || prompt('Enter search query:');
+    const query = typeof q == 'string' ? q : prompt('Enter search query:');
     if (!query) return;
     const ul = document.querySelector('.card ul');
     document.getElementById('title').textContent = `Search Results for "${query}"`;

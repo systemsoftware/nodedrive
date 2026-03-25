@@ -71,7 +71,7 @@ select{
     <li onclick="ctx_rename()" id="renameb">Rename</li>
     <li onclick="ctx_move()" id="moveb">Move</li>
     <hr id="delhr">
-    <li style="color: red;" id="deleteb" onclick="ctx_delete()">Delete</li>
+    <li style="color: red;" id="deleteb" onclick="ctx_delete()">Trash</li>
   </ul>
 </div>
 
@@ -251,7 +251,7 @@ document.getElementById('file-input').addEventListener('change', uploadFile);
 const searchb = document.getElementById('searchb');
 
 const search = (q) => {
-    const query = q || prompt('Enter search query:');
+    const query = typeof q == 'string' ? q : prompt('Enter search query:');
     if (!query) return;
     const ul = document.querySelector('.card ul');
     document.getElementById('title').textContent = `Search Results for "${query}"`;

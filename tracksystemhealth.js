@@ -22,21 +22,35 @@ async function trackSystemHealth(returnData = false) {
             cpus: _cpuLoad.cpus.map(core => { return core.load })
         };
 
+        const netspeed = await si.networkStats();
+
+        const _networkSpeed = netspeed.find(iface => iface.rx_bytes)
+
+        const networkSpeed = _networkSpeed ? {
+            iface: _networkSpeed.iface,
+            rx_bytes: _networkSpeed.rx_bytes,
+            tx_bytes: _networkSpeed.tx_bytes,
+            rx_sec: _networkSpeed.rx_sec,
+            tx_sec: _networkSpeed.tx_sec
+        } : null;
+
         const cpuTemp = _cpuTemp.main;
 
         if (returnData) {
-            return { cpu: cpuLoad, memory: memInfo, cpuTemp: cpuTemp };
+            return { cpu: cpuLoad, memory: memInfo, cpuTemp: cpuTemp, networkSpeed: networkSpeed };
         } else{
         
         const cpuFile = systemHealth.get('cpu');
         const memFile = systemHealth.get('memory');
         const cpuTempFile = systemHealth.get('cpuTemp');
+        const networkSpeedFile = systemHealth.get('networkSpeed');
 
         const nowISO = new Date().toISOString();
 
         if(cpuFile) cpuFile.kv(nowISO, cpuLoad);
         if(memFile) memFile.kv(nowISO, memInfo);
         if(cpuTemp) cpuTempFile.kv(nowISO, cpuTemp);
+        if(networkSpeedFile) networkSpeedFile.kv(nowISO, networkSpeed);
         }
 
     } catch (err) {
@@ -51,6 +65,7 @@ module.exports.init = async () => {
     systemHealth.create('cpu', { [nowISO]: healthData ? healthData.cpu : 0 });
     systemHealth.create('memory', { [nowISO]: healthData ? healthData.memory : 0 });
     systemHealth.create('cpuTemp', { [nowISO]: healthData ? healthData.cpuTemp : 0 });
+    systemHealth.create('networkSpeed', { [nowISO]: healthData ? healthData.networkSpeed : 0 });
 
     cron.schedule(process.env.SYSTEM_HEALTH_CRON || '*/5 * * * *', trackSystemHealth)
     success(`Scheduled system health tracking ${process.env.SYSTEM_HEALTH_CRON || 'every 5 minutes'}`);
