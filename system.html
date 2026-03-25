@@ -147,7 +147,7 @@
         datasets: [
           {
             label: 'Total Download (GB)',
-            data: Object.values(data.networkSpeed || {}).map(n => n.rx_bytes ? n.rx_bytes / 1024 / 1024 / 1024 : null),
+            data: Object.values(data.networkSpeed || {}).map(n => n.rx_bytes ? n.rx_bytes / 1024 / 1024 / 1024 : null).filter(n => n !== null),
             borderColor: '#0984e3',
             backgroundColor: 'rgba(9, 132, 227, 0.2)',
             fill: true,
@@ -155,7 +155,7 @@
           },
           {
             label: 'Total Upload (GB)',
-            data: Object.values(data.networkSpeed || {}).map(n => n.tx_bytes ? n.tx_bytes / 1024 / 1024 / 1024 : null),
+            data: Object.values(data.networkSpeed || {}).map(n => n.tx_bytes ? n.tx_bytes / 1024 / 1024 / 1024 : null).filter(n => n !== null),
             borderColor: '#d63031',
             backgroundColor: 'rgba(214, 48, 49, 0.2)',
             fill: true,
