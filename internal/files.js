@@ -195,27 +195,29 @@ router.post('/file/rename', async (req, res) => {
     }
 });
 
+
 router.post('/file/mkdir', async (req, res) => {
-    const { drive, path: dirPath } = req.body;
+    const { drive, path: dirPath, name } = req.body;
+
+    console.log(`Mkdir Attempt: User=${req.user.username}, Drive=${drive}, Path=${dirPath}, Name=${name}`);
 
     try {
-        const fullPath = await getSafePath(drive, dirPath);
+        const requestedPath = pth.join(
+    (dirPath || '').replace(/^\/+/, ''),
+    name || ''
+);
+
+console.log(`Requested Path: ${requestedPath}`);
+
+        const fullPath = await getSafePath(drive, requestedPath);
+
+        console.log(`Creating directory at: ${fullPath}`);
+
         await fs.mkdir(fullPath, { recursive: true });
+
         res.json({ message: 'Directory created successfully' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-router.post('/file/move', async (req, res) => {
-    const { drive, path: oldPath, newPath } = req.body;
-
-    try {
-        const fullOldPath = await getSafePath(drive, oldPath);
-        const fullNewPath = await getSafePath(drive, newPath);
-        await fs.rename(fullOldPath, fullNewPath);
-        res.json({ message: 'File moved successfully' });
-    } catch (err) {
+        error(`Mkdir Error: ${err.message}, ${err.stack}`);
         res.status(500).json({ error: err.message });
     }
 });

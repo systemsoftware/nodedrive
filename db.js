@@ -41,6 +41,12 @@ const trashDb = new dubnium(`${path}/trash`, {
     trash:false
 });
 
+const indexesDb = new dubnium(`${path}/indexes`, {
+    metadata:false,
+    versioning:{ enabled: true, limit:process.env.INDEXES_DB_VERSION_LIMIT || process.env.DB_VERSION_LIMIT || 5 },
+    trash:false
+});
+
 if(process.env.STARTED) success('Database initialized successfully.');
 
 module.exports = {
@@ -50,5 +56,6 @@ module.exports = {
     drives: drivesDb,
     systemHealth: systemHealthDb,
     trash: trashDb,
+    indexes: indexesDb,
     path: path
 };

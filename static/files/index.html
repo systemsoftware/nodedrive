@@ -83,6 +83,7 @@ select{
             <option id="sel" value="">Select a drive</option>
         </select>
         <i class="material-symbols-rounded" onclick="upload()" id="uploadb" style="cursor: pointer;float: right;margin-top: 5px;margin-right: 10px;">upload</i>
+        <i class="material-symbols-rounded" onclick="mkdir()" id="mkdirb" style="cursor: pointer;float: right;margin-top: 5px;margin-right: 10px;">create_new_folder</i>
         <i class="material-symbols-rounded" onclick="search()" id="searchb" style="cursor: pointer;float: right;margin-top: 5px;margin-right: 10px;">search</i>
         </h2>
         <ul>
@@ -384,6 +385,21 @@ const ctx_copy_path = () => {
 const ctx_open = () => {
     const url = location.origin + `/files/raw?drive=${currentDrive}&path=${encodeURIComponent(selPath)}`;
     window.open(url, '_blank');
+};
+
+const mkdir = () => {
+    const dirName = prompt('Enter directory name:');
+    if (!dirName) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const currentDrive = params.get('drive');
+    const currentPath = params.get('path') || '/';
+
+    fetch('/file/mkdir', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ drive: currentDrive, path: currentPath, name: dirName })
+    }).then(() => location.reload());
 };
 
 </script>
