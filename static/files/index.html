@@ -2,8 +2,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="/style.css">
     <script src="../nav.js"></script>
-    <link rel="stylesheet" href="../icons.css">
-      <link href="./icons.css" rel="stylesheet">
+    <script src="../fileactions.js"></script>
+      <link href="/icons.css" rel="stylesheet">
 </head>
 <style>
 ul {
@@ -148,6 +148,7 @@ window.onload = async () => {
         document.getElementById('title').textContent = 'Please select a drive';
         document.getElementById('uploadb').style.display = 'none';
         document.getElementById('searchb').style.display = 'none';
+        document.getElementById('mkdirb').style.display = 'none';
          return;
     }
 
@@ -189,9 +190,11 @@ window.onload = async () => {
             if(file.isDirectory) {
                 location.href = `?drive=${currentDrive}&path=${encodeURIComponent(file.path)}`;
             } else {
-                location.href = `/files/raw?drive=${currentDrive}&path=${encodeURIComponent(file.path)}`;
+                location.href = `/file/?drive=${currentDrive}&path=${encodeURIComponent(file.path)}`;
             }
         };
+
+const menu = document.getElementById('custom-menu');
 
 fileLi.addEventListener('contextmenu', (e) => {
   e.preventDefault();
@@ -210,15 +213,6 @@ document.addEventListener('click', () => {
 
         ul.appendChild(fileLi);
     });
-};
-
-const download = (drive, path) => {
-    const link = document.createElement('a');
-    link.href = `/files/raw?drive=${drive}&path=${path}`;
-    link.download = decodeURIComponent(path).split('/').pop();
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
 };
 
 const upload = () => {
@@ -284,108 +278,6 @@ if(window.location.search.includes('search=')) {
     search(query);
 }
 
-async function shareFile(drive, path) {
-    try {
-        let expiresin = prompt('Share link expiration in seconds (default 3600):');
-
-        // sanitize input
-        expiresin = parseInt(expiresin);
-        if (isNaN(expiresin) || expiresin <= 0) {
-            expiresin = 3600;
-        }
-
-        const res = await fetch('/files/share', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ drive, path, expiresin })
-        });
-
-        if (!res.ok) {
-            throw new Error('Failed to create share link');
-        }
-
-        const data = await res.json();
-
-        if (!data.shareId) {
-            throw new Error('Invalid response from server');
-        }
-
-        const url = `${window.location.origin}/s/${data.shareId}`;
-
-        setTimeout(async () => {
-            
-        try {
-            await navigator.clipboard.writeText(url);
-            alert(`Share link copied to clipboard! Link: ${url}`);
-        } catch (err) {
-            console.error(err);
-                    alert(`Share link: ${url}`);
-        }
-        }, 500);
-    } catch (err) {
-        console.error(err);
-        alert('Error creating share link');
-    }
-}
-
-const menu = document.getElementById('custom-menu');
-
-const currentDrive = new URLSearchParams(window.location.search).get('drive');
-
-const ctx_delete = () => {
-    if(confirm('Are you sure you want to delete this file?')) {
-        fetch('/file', {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ drive: currentDrive, path: selPath })
-        }).then(() => location.reload());
-    }
-};
-
-const ctx_share = () => {
-    shareFile(currentDrive, selPath);
-};
-
-const ctx_download = () => {
-    download(currentDrive, selPath);
-};
-
-const ctx_rename = () => {
-    const newName = prompt('Enter new name:');
-    if (!newName) return;
-
-    fetch('/file/rename', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ drive: currentDrive, path: selPath, newName })
-    }).then(() => location.reload());
-};
-
-const ctx_move = () => {
-    const newPath = prompt('Enter new path (excluding filename):');
-    if (!newPath) return;
-
-    fetch('/file/move', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ drive: currentDrive, path: selPath, newPath })
-    }).then(() => location.reload());
-};
-
-const ctx_copy_path = () => {
-    const fullPath = location.origin + `/files/raw?drive=${currentDrive}&path=${encodeURIComponent(selPath)}`;
-    navigator.clipboard.writeText(fullPath).then(() => {
-        alert(`Path copied to clipboard: ${fullPath}`);
-    }).catch(err => {
-        console.error(err);
-        alert(`Failed to copy path. Path: ${fullPath}`);
-    });
-};
-
-const ctx_open = () => {
-    const url = location.origin + `/files/raw?drive=${currentDrive}&path=${encodeURIComponent(selPath)}`;
-    window.open(url, '_blank');
-};
 
 const mkdir = () => {
     const dirName = prompt('Enter directory name:');

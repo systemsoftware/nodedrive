@@ -3,6 +3,7 @@ const fs = require('fs/promises');
 const { drives:db, indexes } = require('../../db');
 
 const { walkDir } = require('dubnium/functions');
+const path = require('path');
 
 module.exports = {
     name: 'indexall',
@@ -20,7 +21,7 @@ module.exports = {
                         path: relativePath,
                         drive:{
                             path: d.path,
-                            name: d.name
+                            name: drive.tag
                         }
                     };
                     indexedFiles.push(fileData);
