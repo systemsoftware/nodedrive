@@ -67,6 +67,7 @@ select{
         <select id="drive-select" onchange="location.href = '?drive=' + this.value + '&path=' + encodeURIComponent('/')">
             <option id="sel" value="">Select a drive</option>
         </select>
+        <i class="material-symbols-rounded" onclick="empty()" id="emptyb" style="cursor: pointer;float: right;margin-top: 5px;margin-right: 10px;">delete_forever</i>
         <i class="material-symbols-rounded" onclick="search()" id="searchb" style="cursor: pointer;float: right;margin-top: 5px;margin-right: 10px;">search</i>
         </h2>
         <ul>
@@ -92,8 +93,10 @@ const toggleHidden = () => {
     });
 };
 
-window.onload = async () => {
     const params = new URLSearchParams(window.location.search);
+
+
+window.onload = async () => {
     const currentDrive = params.get('drive');
     const currentPath = params.get('path') || '/';
 
@@ -119,7 +122,7 @@ window.onload = async () => {
 
     if(!currentDrive) {
         document.getElementById('title').textContent = 'Please select a drive';
-        document.getElementById('uploadb').style.display = 'none';
+        document.getElementById('emptyb').style.display = 'none';
         document.getElementById('searchb').style.display = 'none';
          return;
     }
@@ -198,9 +201,19 @@ const undoSearch = () => {
 };
 
 if(window.location.search.includes('search=')) {
-    const params = new URLSearchParams(window.location.search);
     const query = params.get('search');
     search(query);
 }
+
+const empty = () => {
+    if(confirm('Are you sure you want to permanently delete all items in the trash? This action cannot be undone.')) {
+        const currentDrive = params.get('drive');
+        fetch('/trash/empty', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({drive: currentDrive})
+        }).then(() => location.reload());
+    }
+};
 
 </script>

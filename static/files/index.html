@@ -99,6 +99,7 @@ const bytesToHumanReadable = (bytes) => {
 };
 
 let selPath = '';
+let selType = '';
 
 let showHidden = false;
 const toggleHidden = () => {
@@ -200,6 +201,7 @@ fileLi.addEventListener('contextmenu', (e) => {
   e.preventDefault();
   
   selPath = file.path;
+  selType = file.isDirectory ? 'dir' : 'file';
   
   menu.style.top = `${e.pageY}px`;
   menu.style.left = `${e.pageX}px`;

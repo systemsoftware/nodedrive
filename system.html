@@ -31,8 +31,8 @@
     <canvas id="memChart"></canvas>
   </div>
   <div class="card">
-    <h2>CPU Temperature (°C)</h2>
-    <p style="font-size: 0.9rem; color: #636e72; margin-bottom: 10px;">Current CPU temperature in °C. Current: <span id="latestCpuTemp">--</span> °C</p>
+    <h2>CPU Temperature</h2>
+    <p style="font-size: 0.9rem; color: #636e72; margin-bottom: 10px;">Current CPU temperature. Current: <span id="latestCpuTemp">--</span></p>
     <canvas id="cpuTempChart"></canvas>
   </div>
         <div class="card" style="grid-column: 1 / -1;">
@@ -68,7 +68,7 @@
       </p>
     </div>
 </div>
-<p style="text-align: center; margin-top: 20px; font-size: 0.8rem; color: #636e72;">Current data is as current as possible. New data added to charts <span id="updateevery">unknown seconds</span>. <a href="/systemhealth" target="_blank">View raw data</a> or <a href="/updatehealth">force update</a>. Data is lost on server restart and provided by <a href="https://npmjs.com/systeminformation" target="_blank">systeminformation</a>.</p><br>
+<p style="text-align: center; margin-top: 20px; font-size: 0.8rem; color: #636e72;">Current data is as current as possible. New data added to charts <span id="updateevery">unknown seconds</span>. <a href="/systemhealth" target="_blank">View raw data</a> or <a href="/updatehealth">force update</a>. Data is provided by <a href="https://npmjs.com/systeminformation" target="_blank">systeminformation</a>.</p><br>
 </body>
 <script>
 
@@ -79,6 +79,11 @@
     return `${hrs}h ${mins}m ${secs}s`;
   };
 
+  const convertTemp = (temp, isCelsius) => {
+    if (isCelsius) return (temp * 9/5) + 32; // Convert to Fahrenheit
+    return (temp - 32) * 5/9; // Convert to Celsius
+  }
+
   window.onload = async () => {
     const req = await fetch('/systemhealth');
     const data = await req.json();
@@ -87,9 +92,11 @@
 
     document.getElementById('latestCpuLoad').textContent = data.latest.cpu.toFixed(2);
     document.getElementById('latestMemUsed').textContent = (data.latest.memory / 1024 / 1024 / 1024).toFixed(2);
-    document.getElementById('latestCpuTemp').textContent = data.latest.cpuTemp?.toFixed(2) || 'N/A';
+    document.getElementById('latestCpuTemp').textContent = localStorage.getItem('tempUnit') === 'F' ? convertTemp(data.latest.cpuTemp, true).toFixed(2) + ' °F' : data.latest.cpuTemp.toFixed(2) + ' °C';
+    document.getElementById('latestCpuTemp').dataset.unit = localStorage.getItem('tempUnit') === 'F' ? 'F' : 'C';
 
-    document.getElementById('updateevery').textContent = data.latest.updateEvery;
+
+    document.getElementById('updateevery').textContent = data.updateEvery;
 
     document.getElementById('head').textContent = `${data.latest.system}`;
 
@@ -235,5 +242,14 @@
     });
   };
 
+document.getElementById('latestCpuTemp').addEventListener('click', () => {
+  const currentTemp = parseFloat(document.getElementById('latestCpuTemp').textContent);
+  if (isNaN(currentTemp)) return alert('Current temperature is not a valid number');
 
+  const isCurrentlyCelsius = document.getElementById('latestCpuTemp').dataset.unit === 'C';
+  const newTemp = convertTemp(currentTemp, isCurrentlyCelsius).toFixed(2) + (isCurrentlyCelsius ? ' °F' : ' °C');
+  document.getElementById('latestCpuTemp').textContent = newTemp;
+  document.getElementById('latestCpuTemp').dataset.unit = isCurrentlyCelsius ? 'F' : 'C';
+  localStorage.setItem('tempUnit', isCurrentlyCelsius ? 'F' : 'C');
+});
 </script>

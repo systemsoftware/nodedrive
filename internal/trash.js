@@ -204,4 +204,38 @@ router.delete('/files/rm', async (req, res) => {
     }
 });
 
+
+router.post('/trash/empty', async (req, res) => {
+    const { drive } = req.body;
+
+    if (!drive) {
+        return res.status(400).json({ error: 'Drive is required' });
+    }
+
+    if(req.user?.role != 'admin') return res.status(403).json({ error: 'Admin access required' });
+
+    try {
+        const drivePath = await getDrivePath(drive);
+        const trashDir = getTrashDir(drivePath);
+
+        const files = await fs.readdir(trashDir);
+
+        for (const file of files) {
+            const item = await trash.get(file).read();
+            if (item) {
+                await fs.rm(item.trashPath, { recursive: true });
+                await trash.delete(file);
+            } else {
+                console.warn('No DB record for trash file:', file);
+            }
+        }
+
+        res.json({ message: 'Trash emptied' });
+
+    } catch (err) {
+        console.error('Empty trash error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

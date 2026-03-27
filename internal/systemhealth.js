@@ -53,12 +53,14 @@ res.json({ cpu, memory, cpuTemp, networkSpeed, latest:{
     memory:(await si.mem()).used,
    system: systemString,
     cpuTemp:(await si.cpuTemperature()).main,
-    updateEvery: cronToWords(process.env.SYSTEM_HEALTH_CRON || '*/5 * * * *'),
     network: networkObject,
     uptime: {
         os: os.uptime(),
         process: process.uptime()
     }
-} });
+},
+updateEvery: cronToWords(process.env.SYSTEM_HEALTH_CRON || '*/5 * * * *'),
+DONT_OVERWRITE_HEALTH_DATA: process.env.DONT_OVERWRITE_HEALTH_DATA ? true : false
+});
 });
 module.exports = router;

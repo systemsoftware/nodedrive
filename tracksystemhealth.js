@@ -62,10 +62,16 @@ module.exports.init = async () => {
     const healthData = await trackSystemHealth(true);
     const nowISO = new Date().toISOString();
 
+    if(!process.env.DONT_OVERWRITE_HEALTH_DATA) {
+        await systemHealth.delete('cpu');
+        await systemHealth.delete('memory');
+        await systemHealth.delete('cpuTemp');
+        await systemHealth.delete('networkSpeed');
     systemHealth.create('cpu', { [nowISO]: healthData ? healthData.cpu : 0 });
     systemHealth.create('memory', { [nowISO]: healthData ? healthData.memory : 0 });
     systemHealth.create('cpuTemp', { [nowISO]: healthData ? healthData.cpuTemp : 0 });
     systemHealth.create('networkSpeed', { [nowISO]: healthData ? healthData.networkSpeed : 0 });
+    }
 
     cron.schedule(process.env.SYSTEM_HEALTH_CRON || '*/5 * * * *', trackSystemHealth)
     success(`Scheduled system health tracking ${process.env.SYSTEM_HEALTH_CRON || 'every 5 minutes'}`);

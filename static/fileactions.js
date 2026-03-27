@@ -104,6 +104,11 @@ const ctx_copy_path = () => {
 };
 
 const ctx_open = () => {
+    if(selType == 'dir') {
+        const url = location.origin + `/files?drive=${currentDrive}&path=${encodeURIComponent(selPath)}`;
+        window.open(url, '_blank');
+        return;
+    }
     const url = location.origin + `/file?drive=${currentDrive}&path=${encodeURIComponent(selPath)}`;
     window.open(url, '_blank');
 };

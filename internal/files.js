@@ -6,6 +6,7 @@ const { drives, users } = require('../db');
 const pth = require('path');
 const multer = require('multer');
 const crypto = require('crypto');
+const archiver = require('archiver');
 
 const createShareId = (data) => {
     const payload = Buffer.from(JSON.stringify(data)).toString('base64url');
@@ -86,7 +87,6 @@ router.get('/files/json', async (req, res) => {
                         isDirectory: stats.isDirectory(),
                         size: stats.size,
                         modified: stats.mtime,
-                        // This is the relative path to send back to frontend
                         path: pth.join(reqPath, file).replace(/\\/g, '/') 
                     };
                 })
@@ -104,7 +104,15 @@ router.get('/files/raw', async (req, res) => {
     try {
         const fullPath = await getSafePath(drive, reqPath);
         try{
-            fs.access(fullPath);
+            const stat = await fs.stat(fullPath);
+            if(stat.isDirectory()) {
+                const archive = archiver('zip', { zlib: { level: 9 } });
+                archive.directory(fullPath, false);
+                archive.finalize();
+                res.attachment(`${pth.basename(reqPath)}.zip`);
+                archive.pipe(res);
+                return;
+            }
         } catch {
             return res.status(404).json({ error: 'File not found' });
         }
@@ -167,9 +175,17 @@ const sharedHandler = async (req, res) => {
         }
         const fullPath = await getSafePath(data.drive, data.path);
         try{
-            fs.access(fullPath);
-        } catch {
-            return res.status(404).json({ error: 'File not found' });
+            const stat = await fs.stat(fullPath);
+            if(stat.isDirectory()) {
+                const archive = archiver('zip', { zlib: { level: 9 } });
+                archive.directory(fullPath, false);
+                archive.finalize();
+                res.attachment(`${pth.basename(data.path)}.zip`);
+                archive.pipe(res);
+                return;
+            }
+        } catch (e) {
+            return res.status(404).json({ error: e.message });
         }
         const readStream = createReadStream(fullPath);
         readStream.pipe(res);
