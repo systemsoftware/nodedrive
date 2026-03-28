@@ -12,7 +12,7 @@ const links = rawLinks.map(link => ({
     active: active(link) 
 }));
 
-const logo = 'NAS';
+const logo = 'NodeDrive';
 
 class GlassNavbar extends HTMLElement {
   static get observedAttributes() {
