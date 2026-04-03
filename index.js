@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 
 const getContrastTextColor = require('./contrast.js');
 
-let styling = fs.readFileSync('./style.css', 'utf-8');
+let styling = fs.readFileSync(__dirname+'/style.css', 'utf-8');
 
 const { info, error, success, warn, APIError, special, APIResponseError, pageError } = require('./logs');
 
@@ -19,11 +19,11 @@ const advancedLogging =  advancedAdvancedLogging || process.env.ADVANCED_LOGGING
 module.exports.ADVANCED_LOGGING = advancedLogging;
 module.exports.ADVANCED_ADVANCED_LOGGING = advancedAdvancedLogging;
 
-require('dotenv').config().error ? warn('Environment file not found. Please create one at .env') : advancedAdvancedLogging ? info('Environment file found.') : null;
+require('dotenv').config({ path: __dirname + '/.env' }).error ? warn('Environment file not found. Please create one at .env') : advancedAdvancedLogging ? info('Environment file found.') : null;
 
-if(!fs.existsSync('./internal/allowlist.json')) throw new Error('Internal allowlist not found. Please create one at internal/allowlist.json');
+if(!fs.existsSync(__dirname+'/internal/allowlist.json')) throw new Error('Internal allowlist not found. Please create one at internal/allowlist.json');
 
-const internalAllowList = require('./internal/allowlist.json');
+const internalAllowList = require(__dirname+'/internal/allowlist.json');
 
 const routeLimiter = rateLimit({ windowMs: 60 * 1000, max: 20 });
 
@@ -95,7 +95,7 @@ app.use((req, res, next) => {
 
 app.use(express.urlencoded({ extended: true }));
 
-fs.readdirSync('./routes').filter(e => e.endsWith('.js') || e.endsWith('.ts')).forEach(file => {
+fs.readdirSync(__dirname+'/routes').filter(e => e.endsWith('.js') || e.endsWith('.ts')).forEach(file => {
     const routePath = path.join(__dirname, 'routes', file);
     const route = require(routePath);
     if (typeof route === 'function') {
@@ -108,7 +108,7 @@ fs.readdirSync('./routes').filter(e => e.endsWith('.js') || e.endsWith('.ts')).f
 });
 
 
-fs.readdirSync('./internal').filter(e => e.endsWith('.js') || e.endsWith('.ts')).forEach(file => {
+fs.readdirSync(__dirname+'/internal').filter(e => e.endsWith('.js') || e.endsWith('.ts')).forEach(file => {
     const routePath = path.join(__dirname, 'internal', file);
     const route = require(routePath);
     if (typeof route === 'function') {
@@ -119,7 +119,7 @@ fs.readdirSync('./internal').filter(e => e.endsWith('.js') || e.endsWith('.ts'))
     }
 });
 
-fs.readdirSync('./api').filter(e => e.endsWith('.js') || e.endsWith('.ts')).forEach(file => {
+fs.readdirSync(__dirname+'/api').filter(e => e.endsWith('.js') || e.endsWith('.ts')).forEach(file => {
     const routePath = path.join(__dirname, 'api', file);
     const route = require(routePath);
     if (typeof route === 'function') {
@@ -131,7 +131,7 @@ fs.readdirSync('./api').filter(e => e.endsWith('.js') || e.endsWith('.ts')).forE
 });
 
 app.get('/style.css', (req, res) => {
-    if(process.argv.includes('--dev')) styling = fs.readFileSync('./style.css', 'utf-8');
+    if(process.argv.includes('--dev')) styling = fs.readFileSync(__dirname+'/style.css', 'utf-8');
     let customStyling = styling;
     if(req.cookies.background) customStyling = customStyling.split('BACKGROUND_COLOR').join(req.cookies.background);
     else customStyling = customStyling.split('BACKGROUND_COLOR').join('linear-gradient(135deg, #90b8f4 0%, #c3cfe2 100%) no-repeat center center fixed;');
@@ -140,7 +140,7 @@ app.get('/style.css', (req, res) => {
     res.setHeader('Content-Type', 'text/css').send(customStyling);
 })    
 
-require('./tracksystemhealth.js').init();
+require(__dirname+'/tracksystemhealth.js').init();
 
 
 app.use(express.static('static'));
