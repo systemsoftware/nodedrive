@@ -10,7 +10,7 @@ NodeDrive is a robust, Node.js-powered Network Attached Storage (NAS) server app
   * **Integrated CLI:** A powerful command-line interface for direct server management, user creation, and drive mounting.
   * **System Health Monitoring:** Tracks system metrics (like macOS temperature and disk space) and logs system health over time.
   * **Internal Routing Security:** Restricted internal API routes protected by a configurable hostname allowlist.
-  * **View in Finder:** Add your NodeDrive Instance to Finder with [systemsoftware/nodedrive-mac](https://github.com/systemsoftware/nodedrive-mac/settings).
+  * **View in Finder:** Add your NodeDrive Instance to Finder with [systemsoftware/nodedrive-mac](https://github.com/systemsoftware/nodedrive-mac).
 
 
 ## 🛠 Tech Stack
