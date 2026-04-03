@@ -12,7 +12,6 @@ module.exports = {
     name: 'info',
     description: 'Display information about the NAS',
     usage: 'info',
-    aliases: ['i'],
     async execute(args) {
         const i = await info();
         for (const [key, value] of Object.entries(i)) {

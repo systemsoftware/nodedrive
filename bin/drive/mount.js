@@ -9,7 +9,6 @@ module.exports = {
     name: 'mount',
     description: 'Mount a drive to the NAS',
     usage: 'mount <drive_name>',
-    aliases: ['m'],
     async execute(args) {
   console.log('Mounting drive...');
         const rl = readline.createInterface({

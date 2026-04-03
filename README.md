@@ -1,7 +1,7 @@
 # NodeDrive
 > Note: this is still in early development.
 
-NodeDrive is a robust, Node.js-powered Network Attached Storage (NAS) server application. It provides a secure web interface and a comprehensive Command Line Interface (CLI) for managing files, users, and connected drives. Built with a custom Dubnium database architecture, it features built-in file versioning, system health tracking, and secure JSON Web Token (JWT) authentication.
+NodeDrive is a robust, Node.js-powered Network Attached Storage (NAS) server application. It provides a secure web interface and a comprehensive Command Line Interface (CLI) for managing files, users, and connected drives.
 
 ## ✨ Key Features
 
@@ -9,8 +9,9 @@ NodeDrive is a robust, Node.js-powered Network Attached Storage (NAS) server app
   * **Custom Database Engine:** Leverages the `dubnium` database for lightweight, high-performance data storage, complete with configurable versioning and trash management.
   * **Integrated CLI:** A powerful command-line interface for direct server management, user creation, and drive mounting.
   * **System Health Monitoring:** Tracks system metrics (like macOS temperature and disk space) and logs system health over time.
-  * **Customizable Theming:** Dynamic CSS serving that automatically adjusts text contrast based on user background color preferences.
   * **Internal Routing Security:** Restricted internal API routes protected by a configurable hostname allowlist.
+  * **View in Finder:** Add your NodeDrive Instance to Finder with [systemsoftware/nodedrive-mac](https://github.com/systemsoftware/nodedrive-mac/settings).
+
 
 ## 🛠 Tech Stack
 
@@ -18,7 +19,7 @@ NodeDrive is a robust, Node.js-powered Network Attached Storage (NAS) server app
   * **Database:** [Dubnium](https://npmjs.com/dubnium)
   * **Authentication & Security:** JWT (`jsonwebtoken`), `bcrypt`, `express-rate-limit`, `cookie-parser`
   * **File Handling:** `multer`, `archiver`
-  * **System Metrics:** `systeminformation`, `check-disk-space`, `macos-temperature-sensor`
+  * **System Metrics:** `systeminformation`, `check-disk-space`, `macos-temperature-sensor` (can be uninstalled on non-macOS devices, or if you do not need to track CPU temp)
 
 ## 🚀 Installation
 
@@ -32,7 +33,7 @@ NodeDrive is a robust, Node.js-powered Network Attached Storage (NAS) server app
 1.  **Clone the repository:**
 
     ```bash
-    git clone <repository-url>
+    git clone https://github.com/systemsoftware/nodedrive
     cd nodedrive
     ```
 

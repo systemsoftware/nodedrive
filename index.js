@@ -27,7 +27,7 @@ const internalAllowList = require('./internal/allowlist.json');
 
 const routeLimiter = rateLimit({ windowMs: 60 * 1000, max: 20 });
 
-const apiLimiter = rateLimit({ windowMs: 60 * 1000, max: 10 });
+const apiLimiter = rateLimit({ windowMs: 60 * 1000, max: 1000 });
 
 const app = express();
 

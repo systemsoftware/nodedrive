@@ -5,7 +5,6 @@ module.exports = {
     name: 'help',
     description: 'Display help information about the NAS',
     usage: 'help',
-    aliases: ['h'],
     async execute(args) {
         const binDir = path.join(__dirname, '..');
         
@@ -30,9 +29,6 @@ module.exports = {
                         console.log(`Command: ${topCmd} ${cmd.name}`);
                         console.log(`Description: ${cmd.description || 'No description'}`);
                         console.log(`Usage: ${cmd.usage || 'No usage info'}`);
-                        if (cmd.aliases) {
-                            console.log(`Aliases: ${cmd.aliases.join(', ')}`);
-                        }
                         console.log('-----------------------------');
                     }
                 }

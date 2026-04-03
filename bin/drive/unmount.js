@@ -4,7 +4,6 @@ module.exports = {
     name: 'unmount',
     description: 'Unmount a drive from the NAS',
     usage: 'unmount <drive_name>',
-    aliases: ['um'],
     async execute(args) {
  if (args.length < 1) {
             console.log('Please provide a drive name to unmount.');

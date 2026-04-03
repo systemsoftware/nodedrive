@@ -37,7 +37,6 @@ module.exports = {
     name: 'info',
     description: 'View information about a mounted drive',
     usage: 'info <drive_name>',
-    aliases: ['i'],
     async execute(args) {
       if (args.length < 1) {
             console.log('Please provide a drive name to view info for.');
