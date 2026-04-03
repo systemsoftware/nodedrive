@@ -1,7 +1,12 @@
 body {
-  background: linear-gradient(135deg, #90b8f4 0%, #c3cfe2 100%) no-repeat center center fixed;
+  background: BACKGROUND_COLOR;
   background-size: cover;
 }
+
+* {
+    color:TEXT_COLOR;
+}
+
   body, html {
   height: 100%;
   font-family: 'Segoe UI', sans-serif;

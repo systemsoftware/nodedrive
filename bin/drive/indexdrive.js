@@ -7,11 +7,12 @@ const { walkDir } = require('dubnium/functions');
 module.exports = {
     name: 'indexdrive',
     description: 'Creates an index of all files in a drive.',
+    usage: 'indexdrive <drive>',
     async execute(args) {
         const driveId = args[0];
         const drive = db.get(driveId);
         if (!drive) {
-            console.error(`Drive with ID ${driveId} not found.`);
+            console.error(`Drive ${driveId} not found.`);
             return;
         }
         const indexedFiles = [];

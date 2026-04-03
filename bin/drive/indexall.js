@@ -8,6 +8,7 @@ const path = require('path');
 module.exports = {
     name: 'indexall',
     description: 'Creates an index of all files in all drives.',
+    usage: 'indexall',
     async execute() {
         const drives = await db.getAll({ tagOnly:false });
 

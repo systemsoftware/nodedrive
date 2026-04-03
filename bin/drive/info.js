@@ -21,7 +21,7 @@ async function showStorageProgress(size, free) {
     bar.stop();
 }
 
-const info = async (driveName) => {
+const getInfo = async (driveName) => {
     const path = (await db.get(driveName).read()).path;
     return {
         totalDrives: (await db.getAll({ tagOnly:true })).length,
@@ -48,20 +48,18 @@ module.exports = {
             console.log(`Drive ${driveName} does not exist.`);
             process.exit(1);
         }
-       const info = await info(driveName);
+       const info = await getInfo(driveName);
        for (const [key, value] of Object.entries(info)) {
-            if (key === 'diskSpace') {
-                console.log('Disk Space:', `Free: ${(value.free / (1024 ** 3)).toFixed(1)}GB / Total: ${(value.size / (1024 ** 3)).toFixed(1)}GB`);
-            } else {
+            if (key !== 'diskSpace') {
                 console.log(`${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`);
             }
         }
         try {
-            const diskSpace = await checkDiskSpace(driveInfo.path);
+            const diskSpace = await checkDiskSpace((await drive.read()).path);
             showStorageProgress(diskSpace.size, diskSpace.free);
         } catch (err) {
             console.log('Could not retrieve disk space info:', err.message);
         }
     },
-    info
+    info: getInfo
 }

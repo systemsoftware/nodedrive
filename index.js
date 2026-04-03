@@ -134,9 +134,9 @@ app.get('/style.css', (req, res) => {
     if(process.argv.includes('--dev')) styling = fs.readFileSync('./style.css', 'utf-8');
     let customStyling = styling;
     if(req.cookies.background) customStyling = customStyling.split('BACKGROUND_COLOR').join(req.cookies.background);
-    else customStyling = customStyling.split('BACKGROUND_COLOR').join('rgb(45, 45, 45)');
+    else customStyling = customStyling.split('BACKGROUND_COLOR').join('linear-gradient(135deg, #90b8f4 0%, #c3cfe2 100%) no-repeat center center fixed;');
     if(req.cookies.text) customStyling = customStyling.split('TEXT_COLOR').join(req.cookies.text);
-    else customStyling = customStyling.split('TEXT_COLOR').join(getContrastTextColor(req.cookies.background || [45, 45, 45]));
+    else customStyling = customStyling.split('TEXT_COLOR').join(getContrastTextColor(req.cookies.background || [144, 184, 244]));
     res.setHeader('Content-Type', 'text/css').send(customStyling);
 })    
 

@@ -3,9 +3,9 @@ const { info, error, success, APIError } = require('../logs');
 
 const router = Router();
 
-router.get('/demo', (req, res) => {
+router.get('/sign-out', (req, res) => {
 
-    res.send('Hello, World.');
+    res.clearCookie('token', { path: '/' }).redirect('/signin');
 
 })
 

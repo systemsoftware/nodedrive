@@ -10,7 +10,7 @@ const { success, error, info } = require('../logs');
 router.post('/signin', async (req, res) => {
     info(`Sign-in attempt for username: ${req.body.username}`);
     const { username, password } = req.body;
-    const rememberMe = req.body.rememberMe === 'on';
+    const rememberMe = req.body.rememberMe == 'true';
     if(!(await db.has(username))) return res.status(400).send('Invalid username or password');
     const user = await db.get(username).read();
     const isMatch = await bcrypt.compare(password, user.password);

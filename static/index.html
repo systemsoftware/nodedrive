@@ -29,14 +29,34 @@
 button{
     margin-top: 10px;
 }
+
+#ua {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#ua button{
+  margin: 0 10px;
+}
+
 </style>
 
 <body>
 <nav-bar>
 </nav-bar>
+<h2 style="text-align: center; margin-top: 20px;margin-bottom: -15px;" id="head">Drives</h2>
+
     <div class="dashboard-grid">
 
     </div>
+    <h2 style="text-align: center; margin-top: 20px;" id="head">You</h2>
+    <div class="card" id="ua">
+      <button onclick="location='/signout'">Sign out</button>
+      <button onclick="location='/signin'">Switch user</button>
+      <button onclick="window.open('/jwt', '_blank')">View JWT</button>
+    </div>
+<br><br>
 </body>
 <script>
 

@@ -42,7 +42,7 @@
       </div>
       
       <div class="options">
-        <label><input type="checkbox" name="rememberMe"> Remember me</label>
+        <label><input type="checkbox" name="rememberMe" id="rem"> Remember me</label>
       </div>
       
       <button type="button">Sign in</button>
@@ -57,8 +57,9 @@
   document.querySelector('form button').addEventListener('click', async () => {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
+    const rememberMe = document.getElementById('rem').checked;
 
-    const body = new URLSearchParams({ username, password });
+    const body = new URLSearchParams({ username, password, rememberMe });
     const res = await fetch('/signin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

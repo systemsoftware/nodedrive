@@ -1,4 +1,5 @@
 const { drives:db } = require('../../db');
+const bcrypt = require('bcrypt');
 
 module.exports = {
     name: 'unmount',

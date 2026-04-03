@@ -26,7 +26,7 @@ module.exports = {
                     const cmd = require(cmdPath);
 
                     if (cmd.name) {
-                        console.log(`Command: ${topCmd} ${cmd.name}`);
+                        console.log(`Command: ${topCmd} ${cmd.name != topCmd ? cmd.name : ''}`);
                         console.log(`Description: ${cmd.description || 'No description'}`);
                         console.log(`Usage: ${cmd.usage || 'No usage info'}`);
                         console.log('-----------------------------');
