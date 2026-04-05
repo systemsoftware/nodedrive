@@ -53,16 +53,14 @@ app.use((req, res, next) => {
         info(`${req.method} request to ${fullPath} from ${req.hostname}`);
     }
 
-    if (
+    const isPublic =
         req.path.startsWith('/signin') ||
         req.path.startsWith('/api') ||
-        req.path.includes('.css') ||
-        req.path.includes('jpeg') ||
-        req.path.includes('shared') ||
-        req.path.includes('/s/')
-    ) {
-        return next();
-    }
+        req.path.match(/\.(css|js|png|jpg|jpeg|svg|ico)$/) ||
+        req.path.includes('/shared') ||
+        req.path.includes('/s/');
+
+    if (isPublic) return next();
 
     const token = req.cookies.token;
 
@@ -71,19 +69,25 @@ app.use((req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
+        
+        const now = Math.floor(Date.now() / 1000);
 
-        const newToken = jwt.sign(
-            { ...decoded },
-            process.env.JWT_SECRET
-        );
+const lifetime = decoded.exp - decoded.iat;
+const timeLeft = decoded.exp - now;
 
-        res.cookie('token', newToken, {
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production'
-        });
+if (timeLeft < lifetime * 0.5) {
+    const newToken = jwt.sign(
+        { username: decoded.username, role: decoded.role },
+        process.env.JWT_SECRET,
+        { expiresIn: lifetime }
+    );
+
+    res.cookie('token', newToken, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production'
+    });
+}
 
         next();
     } catch (err) {
