@@ -1,5 +1,6 @@
 {
   "name": "nodedrive",
+  "description": "Turn any computer into a Network Attached Storage (NAS) device with NodeDrive.",
   "version": "1.1.0",
   "main": "index.js",
   "scripts": {

@@ -4,11 +4,13 @@ const path = require('path');
 const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 
+const config = require('./config');
+
 const getContrastTextColor = require('./contrast.js');
 
 let styling = fs.readFileSync(__dirname+'/style.css', 'utf-8');
 
-const { info, error, success, warn, APIError, special, APIResponseError, pageError } = require('./logs');
+const { info, error, success, warn, special, APIResponseError, pageError } = require('./logs');
 
 const PORT = process.env.PORT || 80;
 
@@ -19,7 +21,6 @@ const advancedLogging =  advancedAdvancedLogging || process.env.ADVANCED_LOGGING
 module.exports.ADVANCED_LOGGING = advancedLogging;
 module.exports.ADVANCED_ADVANCED_LOGGING = advancedAdvancedLogging;
 
-require('dotenv').config({ path: __dirname + '/.env' }).error ? warn('Environment file not found. Please create one at .env') : advancedAdvancedLogging ? info('Environment file found.') : null;
 
 if(!fs.existsSync(__dirname+'/internal/allowlist.json')) throw new Error('Internal allowlist not found. Please create one at internal/allowlist.json');
 

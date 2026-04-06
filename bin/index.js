@@ -4,6 +4,8 @@ const subcmd = process.argv[2];
 const subsubcmd = process.argv[3];
 const path = require('path');
 
+require('../config')
+
 const exists = require('../utils/exists');
 
 const main = async () => {

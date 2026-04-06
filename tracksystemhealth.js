@@ -63,10 +63,6 @@ module.exports.init = async () => {
     const nowISO = new Date().toISOString();
 
     if(!process.env.DONT_OVERWRITE_HEALTH_DATA) {
-        await systemHealth.delete('cpu');
-        await systemHealth.delete('memory');
-        await systemHealth.delete('cpuTemp');
-        await systemHealth.delete('networkSpeed');
     systemHealth.create('cpu', { [nowISO]: healthData ? healthData.cpu : 0 });
     systemHealth.create('memory', { [nowISO]: healthData ? healthData.memory : 0 });
     systemHealth.create('cpuTemp', { [nowISO]: healthData ? healthData.cpuTemp : 0 });

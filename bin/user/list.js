@@ -1,17 +1,28 @@
-
-const readline = require('readline');
-const bcrypt = require('bcrypt');
-
-const { users:db } = require('../../db');
+const { users: db } = require('../../db');
+const { color, section } = require('../ui');
 
 module.exports = {
     name: "list",
     description: "List all users",
     usage: "list",
-    async execute(args) {
+    async execute() {
         const users = await db.list();
+
+        console.log(section('Users'));
+
+        if (!users.length) {
+            console.log(color('No users found.', 'gray'));
+            return;
+        }
+
         users.forEach(user => {
-            console.log(`- ${user.username} (${user.role})`);
+            const roleColor = user.role === 'admin' ? 'cyan' : 'green';
+
+            console.log(
+                `${color('●', roleColor)} ${color(user.username, 'yellow')} ${color(`(${user.role})`, 'gray')}`
+            );
         });
+
+        console.log('');
     }
-}
+};
