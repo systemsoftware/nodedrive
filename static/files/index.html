@@ -117,6 +117,8 @@ window.onload = async () => {
     const currentDrive = params.get('drive');
     const currentPath = params.get('path') || '/';
 
+        document.title = `${currentDrive ? 'Files - ' + currentDrive : 'File Explorer'} - NodeDrive`;
+
     // 1. Load Drives
     const drivesReq = await fetch('/drives');
     const drivesData = await drivesReq.json();

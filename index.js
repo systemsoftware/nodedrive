@@ -73,6 +73,8 @@ app.use((req, res, next) => {
         
         const now = Math.floor(Date.now() / 1000);
 
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
 const lifetime = decoded.exp - decoded.iat;
 const timeLeft = decoded.exp - now;
 
@@ -89,6 +91,8 @@ if (timeLeft < lifetime * 0.5) {
         secure: process.env.NODE_ENV === 'production'
     });
 }
+
+req.user = decoded
 
         next();
     } catch (err) {

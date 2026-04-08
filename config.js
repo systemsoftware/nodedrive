@@ -64,17 +64,3 @@ for (const key of Object.keys(CONFIG_DEFAULTS)) {
         : CONFIG_DEFAULTS[key];
   }
 }
-
-process.env.fromConfig = true;
-
-if (!process.env.JWT_SECRET) {
-  if (!config.JWT_SECRET) {
-    const crypto = require('crypto');
-    config.JWT_SECRET = crypto.randomBytes(32).toString('hex');
-
-    fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2));
-    console.log('Generated JWT secret');
-  }
-
-  process.env.JWT_SECRET = config.JWT_SECRET;
-}

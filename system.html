@@ -105,7 +105,7 @@
 
     document.getElementById('systemName').textContent = data.latest.system;
 
-    console.log(data)
+    document.title = `System Health Dashboard (${data.latest.system}) - NodeDrive`;
 
    if(!Object.values(data.latest.network || {}).find(n => n.rx_sec)){
      document.getElementById('networkChartR').style.display = 'none';

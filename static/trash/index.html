@@ -95,6 +95,8 @@ const toggleHidden = () => {
 
     const params = new URLSearchParams(window.location.search);
 
+    document.title = `Trash - ${params.get('drive') || 'No Drive'} - NodeDrive`;
+
 
 window.onload = async () => {
     const currentDrive = params.get('drive');

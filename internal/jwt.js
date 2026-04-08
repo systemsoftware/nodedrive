@@ -1,15 +1,20 @@
 const { Router } = require('express');
-const { info, error, success, APIError } = require('../logs');
+const { readFileSync } = require('fs');
+const path = require('path');
 
 const router = Router();
 
 router.get('/jwt', (req, res) => {
 
+    let page = readFileSync(path.resolve(__dirname, '../err.html'), 'utf-8');
+
+    page = page.split('Error').join('JWT Token').replace('%error%', req.cookies.token);
+
     if(req.query.parse) {
         return res.json(req.user);
     }
 
-   return res.send(req.cookies.token)
+res.send(page);
 
 })
 

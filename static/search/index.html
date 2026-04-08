@@ -131,7 +131,6 @@ window.onload = async () => {
     const ul = document.querySelector('.card ul');
 
     data.files.forEach(file => {
-        console.log(file);
         const fileLi = document.createElement('li');
         const icon = file.isDirectory ? '📁' : '📄';
         const info = file.isDirectory ? 'Directory' : bytesToHumanReadable(file.size);
@@ -146,7 +145,6 @@ window.onload = async () => {
         }
 
         fileLi.onclick = () => {
-            console.log(file);
             if(file.isDirectory) {
                 location.href = `?drive=${file.drive.name}&path=${encodeURIComponent(file.path)}`;
             } else {

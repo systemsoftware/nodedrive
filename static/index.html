@@ -2,6 +2,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="/style.css">
     <script src="../nav.js"></script>
+    <title>NodeDrive Dashboard</title>
 </head>
 <style>
   .dashboard-grid {
@@ -80,7 +81,7 @@ const bytesToHimanReadable = (bytes) => {
       driveCard.classList.add('card');
       driveCard.innerHTML = `
         <h2>${drive.name}</h2>
-        <p>Path: ${drive.drivePath} (${drive.diskSpace.diskPath})</p>
+        <p>Path: ${drive.path} (${drive.diskSpace.diskPath})</p>
         <p>${bytesToHimanReadable(drive.diskSpace.free)} free of ${bytesToHimanReadable(drive.diskSpace.size)}</p>
         <canvas id="drive-chart-${drive.name}" width="400" height="200"></canvas>
         <button onclick="window.open('/files?drive=${drive.name}', '_blank')">View Files</button>

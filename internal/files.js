@@ -166,7 +166,6 @@ const sharedHandler = async (req, res) => {
     const { id } = req.params;
     try {
         const data = decodeShareId(id);
-        console.log(data);
         if (!data) {
             return res.status(400).json({ error: 'Invalid share ID' });
         }
@@ -214,20 +213,13 @@ router.post('/file/rename', async (req, res) => {
 
 router.post('/file/mkdir', async (req, res) => {
     const { drive, path: dirPath, name } = req.body;
-
-    console.log(`Mkdir Attempt: User=${req.user.username}, Drive=${drive}, Path=${dirPath}, Name=${name}`);
-
     try {
         const requestedPath = pth.join(
     (dirPath || '').replace(/^\/+/, ''),
     name || ''
 );
 
-console.log(`Requested Path: ${requestedPath}`);
-
         const fullPath = await getSafePath(drive, requestedPath);
-
-        console.log(`Creating directory at: ${fullPath}`);
 
         await fs.mkdir(fullPath, { recursive: true });
 

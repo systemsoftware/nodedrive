@@ -127,7 +127,7 @@ router.get('/trash/json', async (req, res) => {
 // ♻️ Restore file
 //
 router.post('/trash/restore', async (req, res) => {
-    console.log('Restore request body:', req.body);
+
     const { drive, path:file } = req.body;
 
     if (!drive || !file) {
@@ -145,12 +145,7 @@ router.post('/trash/restore', async (req, res) => {
         const drivePath = await getDrivePath(drive);
         const trashDir = getTrashDir(drivePath);
 
-        console.log('Trash directory:', trashDir);
-        console.log('Trash file path:', path.join(trashDir, file));
-
         const trashFilePath = path.join(trashDir, file);
-
-        console.log('Checking if trash file exists:', trashFilePath);
 
         let restorePath = await getSafePath(drive, item.originalPath);
 

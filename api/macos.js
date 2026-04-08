@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs/promises');
 const { drives } = require('../db');
 const jwt = require('jsonwebtoken');
+const { info } = require('console');
 
 app.use(expressJSON());
 
@@ -12,8 +13,6 @@ const fromId = (id) => Buffer.from(id, 'base64url').toString('utf8');
 
 app.use((req, res, next) => {
   const _jwt = req.headers.authorization?.replace('Bearer ', '') || req.cookies.token || req.query.token;
-
-  console.log(req.headers);
 
   if (_jwt) {
     try {
@@ -85,7 +84,7 @@ app.get('/fs/:fileId/content', async (req, res) => {
 });
 
 app.put('/fs/:fileId/content', expressRaw({type: '*/*', limit: '50gb'}), async (req, res) => {
-    console.log(`Received update for ${req.params.fileId}, size: ${req.body.length} bytes`);
+    if(process.env.ADVANCED_LOGGING) info(`Received update for ${req.params.fileId}, size: ${req.body.length} bytes from user ${req.user.username} using macOS API`);
     const filePath = fromId(req.params.fileId);
     try {
         await fs.writeFile(filePath, req.body);
@@ -96,6 +95,7 @@ app.put('/fs/:fileId/content', expressRaw({type: '*/*', limit: '50gb'}), async (
 });
 
 app.post('/fs/:fileId/move', expressJSON(), async (req, res) => {
+    if(process.env.ADVANCED_LOGGING) info(`Received move request for ${req.params.fileId} to ${req.body.targetId} from user ${req.user.username} using macOS API`);
     const srcPath = fromId(req.params.fileId);
     const { targetId } = req.body;
     const destPath = fromId(targetId);
@@ -108,7 +108,7 @@ app.post('/fs/:fileId/move', expressJSON(), async (req, res) => {
 });
 
 app.post('/fs/:fileId/mkdir', async (req, res) => {
-    console.log(`Received mkdir request for ${req.params.fileId}`);
+    if(process.env.ADVANCED_LOGGING) info(`Received mkdir request for ${req.params.fileId} from user ${req.user.username} using macOS API`);
     const dirPath = fromId(req.params.fileId);
     try {
         await fs.mkdir(dirPath, { recursive: true });
@@ -119,6 +119,7 @@ app.post('/fs/:fileId/mkdir', async (req, res) => {
 });
 
 app.delete('/fs/:fileId', async (req, res) => {
+    if(process.env.ADVANCED_LOGGING) info(`Received delete request for ${req.params.fileId} from user ${req.user.username} using macOS API`);
     const filePath = fromId(req.params.fileId);
     try {
         const stat = await fs.stat(filePath);

@@ -6,7 +6,17 @@ module.exports = {
     description: "List all users",
     usage: "list",
     async execute() {
-        const users = await db.list();
+        const _users = await db.getAll( { tagOnly: false } )
+        const users = await Promise.all(_users.map(async user => {
+            const record = await user.read()
+            const stat = await user.stats();
+            return {
+                username: user.tag,
+                role: record.role,
+                createdAt: new Date(stat.birthtimeMs).toLocaleString(),
+                modifiedAt: new Date(stat.mtimeMs).toLocaleString()
+            };
+        }));
 
         console.log(section('Users'));
 
@@ -19,7 +29,7 @@ module.exports = {
             const roleColor = user.role === 'admin' ? 'cyan' : 'green';
 
             console.log(
-                `${color('●', roleColor)} ${color(user.username, 'yellow')} ${color(`(${user.role})`, 'gray')}`
+                `${color('●', roleColor)} ${color(user.username, 'yellow')} ${color(`(${user.role})`, 'gray')} \n  ${color(`Created: ${user.createdAt}`, 'dim')} ${color('|', 'dim')} ${color(`Modified: ${user.modifiedAt}`, 'dim')}`
             );
         });
 

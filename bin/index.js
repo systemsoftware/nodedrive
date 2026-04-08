@@ -8,9 +8,11 @@ require('../config')
 
 const exists = require('../utils/exists');
 
+const { color } = require('./ui');
+
 const main = async () => {
     if (!subcmd) {
-        console.log('No command provided. Use "help" for a list of commands.');
+        console.log(color('No command provided. Use "help" for a list of commands.', 'yellow'));
         return;
     }
 

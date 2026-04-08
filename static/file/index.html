@@ -129,6 +129,7 @@ const bytesToHumanReadable = (bytes) => {
 };
 
 window.onload = async () => {
+    document.title = selPath.split('/').pop() + " - NodeDrive";
     const res = await fetch(`/files/info?drive=${encodeURIComponent(drive)}&path=${encodeURIComponent(selPath)}`);
     const data = await res.json();
     document.getElementById('size').textContent = bytesToHumanReadable(data.size);

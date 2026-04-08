@@ -1,5 +1,6 @@
 const { parse } = require('dotenv');
 const { CONFIG_DEFAULTS, set } = require('../../config');
+const { color } = require('../ui');
 
 const normalize = (str) => str.replace(/[^a-z0-9]/gi, '').toLowerCase();
 
@@ -34,7 +35,7 @@ module.exports = {
       const inputKey = args[0];
 
       if(args.length < 2) {
-        console.error('Usage: set <key> <value>');
+        console.error(color('Usage: set <key> <value>', 'red'));
         return;
       }
     
@@ -44,7 +45,7 @@ const normalizedKey = normalize(inputKey);
 const realKey = keyMap[normalizedKey];
 
 if (!realKey) {
-  console.error(`Invalid config variable: ${inputKey}`);
+  console.error(color(`Invalid config variable: ${inputKey}`, 'red'));
   return;
 }
 
@@ -54,10 +55,10 @@ try {
   const parsed = parseValue(realKey, value);
   await set(realKey, parsed);
 } catch (err) {
-  console.error(`Failed to set config variable: ${err.message}`);
+  console.error(color(`Failed to set config variable: ${err.message}`, 'red'));
   return;
 }
 
-console.log(`Config variable ${realKey} set to ${value}`);
+console.log(color(`Config variable ${realKey} set to ${value}`, 'green'));
     }
 }

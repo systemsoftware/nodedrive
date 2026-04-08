@@ -6,17 +6,7 @@ const showSecrets = process.argv.includes('--show-secrets');
 
 const os = require('os');
 
-// ANSI colors (no deps)
-const colors = {
-    reset: '\x1b[0m',
-    dim: '\x1b[2m',
-    cyan: '\x1b[36m',
-    yellow: '\x1b[33m',
-    green: '\x1b[32m',
-    gray: '\x1b[90m'
-};
-
-const color = (text, c) => `${colors[c]}${text}${colors.reset}`;
+const { color } = require('../ui');
 
 const mask = (value) => {
     if (!value) return color('(not set)', 'gray');
