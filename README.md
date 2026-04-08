@@ -28,7 +28,7 @@ If you prefer to use NodeDrive as a system-wide utility, you can install it dire
 
 **1. Install the package globally:**
 ```bash
-npm install -g nodedrive
+npm install -g nodedrive-server
 ```
 *(Note: Depending on your system configuration, you may need to run this with `sudo`.)*
 
