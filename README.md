@@ -21,7 +21,31 @@ NodeDrive is a robust, Node.js-powered Network Attached Storage (NAS) server app
   * **File Handling:** `multer`, `archiver`
   * **System Metrics:** `systeminformation`, `check-disk-space`, `macos-temperature-sensor` (can be uninstalled on non-macOS devices, or if you do not need to track CPU temp)
 
-## 🚀 Installation
+## 🚀 Installation via npm
+> Best for simple set up.
+
+If you prefer to use NodeDrive as a system-wide utility, you can install it directly from the npm registry.
+
+**1. Install the package globally:**
+```bash
+npm install -g nodedrive
+```
+*(Note: Depending on your system configuration, you may need to run this with `sudo`.)*
+
+**2. Launch the Server:**
+Once installed globally, you can start the NAS server from any directory:
+```bash
+nodedrive start
+```
+
+### 💡 Pro Tip: Persistent Services
+For a production NAS setup, it is recommended to run the global `nodedrive` command using a process manager like **PM2** to ensure it restarts automatically after a reboot:
+```bash
+pm2 start "nodedrive start" --name "my-nodedrive"
+```
+
+## 🚀 Installation via GitHub
+> Best for bleeding edge. This way is harder to keep up to date but may get more frequent minor updates.
 
 ### Prerequisites
 
@@ -43,47 +67,33 @@ NodeDrive is a robust, Node.js-powered Network Attached Storage (NAS) server app
     npm install
     ```
 
-3.  **Configure Environment Variables:**
-    Create a `.env` file in the root directory.
-
-4.  **Set up the Internal Allowlist:**
-    Create a JSON file at `internal/allowlist.json` to define permitted hostnames for internal routes:
-
-    ```json
-    [
-      "localhost",
-      "127.0.0.1"
-    ]
-    ```
-
-5.  **Link the CLI (Optional but recommended):**
+3.  **Link the CLI (Optional but recommended):**
     To use the `nodedrive` command globally:
 
     ```bash
     npm link
     ```
 
-6.  **Start the server:**
+4.  **Start the server:**
 
     ```bash
-    npm start
+    npm start # or nodedrive start if linked
     ```
 
 ## ⚙️ Configuration
 
-Control NodeDrive's behavior using the following environment variables in your `.env` file:
+Control NodeDrive's behavior using the following conifg options in `~/.nodedrive/config.json`. Use the `nodedrive config` command to manage.
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
 | `PORT` | The port the web server runs on. | `80` |
 | `JWT_SECRET` | **Required.** Secret key for signing authentication tokens. | `undefined` |
-| `DB_PATH` | Directory where Dubnium databases are stored. | `~/.nasdb` |
-| `NODE_ENV` | Environment context (e.g., `production`, `development`). | `undefined` |
+| `DB_PATH` | Directory where Dubnium databases are stored. | `~/.nodedrive/db` |
 | `ADVANCED_LOGGING` | Enable detailed console logging (`true`/`false`). | `false` |
 | `ROUTE_LIMITING` | Enable rate limits on standard routes (`true`/`false`). | `false` |
 | `DB_VERSION_LIMIT` | Global limit for file/document versioning in the DB. | `5` |
 
-*(Note: Granular DB limits like `USERS_DB_VERSION_LIMIT` or `FILES_DB_VERSION_LIMIT` can also be set individually).*
+*(Note: Granular DB limits like `USERS_DB_VERSION_LIMIT` can also be set individually).*
 
 ## 💻 Usage
 
@@ -93,11 +103,14 @@ Once the server is running, navigate to `http://localhost:<PORT>` (or your desig
 
 ### CLI Examples
 
-NodeDrive comes with a modular CLI. If you ran `npm link`, you can interact with the server directly from your terminal:
+NodeDrive comes with a modular CLI. If you installed globally via npm or ran `npm link`, you can interact with the server directly from your terminal:
 
 ```bash
 # General usage structure
 nodedrive <command> <subcommand> [options]
+
+# Example: Get help
+nodedrive help [search] # ex: nodedrive help user
 
 # Example: Get system info
 nodedrive info
@@ -110,12 +123,13 @@ nodedrive drive mount
 nodedrive user create
 ```
 
+
 ## 📂 Project Structure
 
 ```text
 nodedrive/
 ├── bin/                  # CLI executable logic and subcommands
-├── internal/             # Restricted internal routes and server logic
+├── internal/             # Internal routes and server logic
 ├── routes/               # Express routing for web pages (UI)
 ├── static/               # Static assets (HTML, images, client-side JS)
 ├── db.js                 # Dubnium database initialization & configuration

@@ -21,11 +21,6 @@ const advancedLogging =  advancedAdvancedLogging || process.env.ADVANCED_LOGGING
 module.exports.ADVANCED_LOGGING = advancedLogging;
 module.exports.ADVANCED_ADVANCED_LOGGING = advancedAdvancedLogging;
 
-
-if(!fs.existsSync(__dirname+'/internal/allowlist.json')) throw new Error('Internal allowlist not found. Please create one at internal/allowlist.json');
-
-const internalAllowList = require(__dirname+'/internal/allowlist.json');
-
 const routeLimiter = rateLimit({ windowMs: 60 * 1000, max: 20 });
 
 const apiLimiter = rateLimit({ windowMs: 60 * 1000, max: 1000 });
@@ -40,11 +35,6 @@ console.success = success;
 app.use(express.json());
 
 app.use(require('cookie-parser')());
-
-const internalOnly = (req, res, next) => {
-if(internalAllowList.includes(req.hostname)) next();
-else APIResponseError({ msg: 'Forbidden', status: 403, res })
-}
 
 app.use((req, res, next) => {
     let fullPath = req.path + (req.query ? '?' + new URLSearchParams(req.query).toString() : '');
@@ -121,7 +111,7 @@ fs.readdirSync(__dirname+'/internal').filter(e => e.endsWith('.js') || e.endsWit
     const routePath = path.join(__dirname, 'internal', file);
     const route = require(routePath);
     if (typeof route === 'function') {
-        app.use(internalOnly, route);
+        app.use(route);
         if(advancedLogging) success(`Internal route ${file} loaded.`);
     } else {
         error(`Internal route file ${file} does not export a valid function.`);
