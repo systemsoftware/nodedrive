@@ -27,5 +27,7 @@
   "directories": {
     "bin": "./bin"
   },
-  "bin": "./bin/index.js"
+  "bin": {
+  "nodedrive": "./bin/index.js"
+}
 }

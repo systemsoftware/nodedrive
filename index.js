@@ -142,12 +142,8 @@ app.get('/style.css', (req, res) => {
 require(__dirname+'/tracksystemhealth.js').init();
 
 
-app.use(express.static('static'));
+app.use(express.static(__dirname+'/static'));
 
-
-app.get('/*', (req, res) => {
-pageError(res, 'The page you are looking for does not exist', 404);
-})
 
 app.listen(PORT, () => {
     special(`Server started on port`, PORT);
