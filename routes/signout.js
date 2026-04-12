@@ -1,5 +1,4 @@
 const { Router } = require('express');
-const { info, error, success, APIError } = require('../logs');
 
 const router = Router();
 

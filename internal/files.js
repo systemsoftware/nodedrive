@@ -76,10 +76,9 @@ router.get('/files/json', async (req, res) => {
         const fullPath = await getSafePath(drive, reqPath);
         const files = await fs.readdir(fullPath);
 
-        // Filter and Map
         const fileDetails = await Promise.all(
             files
-                .filter(file => !u.denyAccess?.includes(pth.join(reqPath, file))) // Safe filtering
+                .filter(file => !u.denyAccess?.includes(pth.join(reqPath, file)))
                 .map(async file => {
                     const stats = await fs.stat(pth.join(fullPath, file));
                     return {

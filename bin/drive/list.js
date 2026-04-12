@@ -1,7 +1,3 @@
-const readline = require('readline');
-const os = require('os');
-const { exists } = require('fs/promises');
-
 const { drives:db } = require('../../db');
 
 module.exports = {

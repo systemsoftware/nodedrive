@@ -2,8 +2,26 @@ const fs = require('fs/promises');
 
 const { drives:db, indexes } = require('../../db');
 
-const { walkDir } = require('dubnium/functions');
 const path = require('path');
+
+const walkDir = async (dir) => {
+    let results = [];
+    const files = await fs.readdir(dir);
+    
+    for (const f of files) {
+        const fullPath = path.join(dir, f);
+        const stats = await fs.stat(fullPath);
+        
+        if (stats.isDirectory()) {
+            const subResults = await walkDir(fullPath);
+            results = results.concat(subResults);
+        } else {
+            results.push(fullPath);
+        }
+    }
+    
+    return results;
+}
 
 module.exports = {
     name: 'indexall',
@@ -15,19 +33,23 @@ module.exports = {
         const indexedFiles = [];
         
         for (const drive of drives) {
-            const d = await drive.read();
-            walkDir(d.path, async (filePath) => {
-                const relativePath = filePath.replace(d.path, '');
-                    const fileData = {
-                        path: relativePath,
-                        drive:{
-                            path: d.path,
-                            name: drive.tag
-                        }
-                    };
-                    indexedFiles.push(fileData);
-            });
+            const data = await drive.read();
+            
+            if(!data.path) continue;
+
+            const files = await walkDir(data.path);
+
+            const indexData = files.map(file => ({
+                path: file,
+                drive: {
+                    path: data.path,
+                    name: drive.tag
+                }
+            }));
+            indexedFiles.push(...indexData);
+
+            await indexes.create(drive.tag, indexData);
+
         }
-        await indexes.create('all', indexedFiles);
     }
 }

@@ -1,4 +1,3 @@
-const { parse } = require('dotenv');
 const { CONFIG_DEFAULTS, set } = require('../../config');
 const { color } = require('../ui');
 

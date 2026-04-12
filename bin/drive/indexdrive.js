@@ -1,5 +1,3 @@
-const fs = require('fs/promises');
-
 const { drives:db, indexes } = require('../../db');
 
 const { walkDir } = require('dubnium/functions');
