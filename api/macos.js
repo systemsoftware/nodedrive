@@ -32,7 +32,7 @@ app.get('/fs/:fileId/children', async (req, res) => {
     const { fileId } = req.params; 
     
     if (fileId === 'root') {
-        const driveList = await drives.getAll({ tagOnly: false });
+        const driveList = await drives.getAll({ tagOnly: false, filter: () => true });
         const seenPaths = new Set();
         const records = [];
         for (const drive of driveList) {

@@ -5,7 +5,7 @@ const info = async () => {
     return {
         version: require('../../package.json').version,
         dbPath,
-        connectedDrives: (await drivesDb.getAll({ tagOnly: true })).length
+        connectedDrives: (await drivesDb.getAll({ tagOnly: true, filter: () => true })).length
     };
 };
 

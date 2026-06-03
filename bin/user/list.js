@@ -6,8 +6,9 @@ module.exports = {
     description: "List all users",
     usage: "list",
     async execute() {
-        const _users = await db.getAll( { tagOnly: false } )
+        const _users = await db.getAll( { tagOnly: false, filter: () => true } )
         const users = await Promise.all(_users.map(async user => {
+            if (await db.has(user.tag)) {
             const record = await user.read()
             const stat = await user.stats();
             return {
@@ -16,6 +17,7 @@ module.exports = {
                 createdAt: new Date(stat.birthtimeMs).toLocaleString(),
                 modifiedAt: new Date(stat.mtimeMs).toLocaleString()
             };
+        }
         }));
 
         console.log(section('Users'));
@@ -25,7 +27,7 @@ module.exports = {
             return;
         }
 
-        users.forEach(user => {
+        users.filter(Boolean).forEach(user => {
             const roleColor = user.role === 'admin' ? 'cyan' : 'green';
 
             console.log(

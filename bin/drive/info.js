@@ -20,13 +20,19 @@ function showStorageProgress(size, free) {
 }
 
 const getInfo = async (driveName) => {
+    if(!db.has(driveName)) {
+        return {
+            drive: driveName,
+            error: 'Drive not found'
+        };
+    }
     const path = (await db.get(driveName).read()).path;
 
     return {
         drive: driveName,
         path,
         os: `${os.type()} (${os.platform()} ${os.release()})`,
-        totalDrives: (await db.getAll({ tagOnly: true })).length,
+        totalDrives: (await db.getAll({ tagOnly: true, filter: () => true })).length,
         diskSpace: await checkDiskSpace(path)
     };
 };

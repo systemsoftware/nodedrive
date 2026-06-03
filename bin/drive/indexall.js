@@ -28,7 +28,7 @@ module.exports = {
     description: 'Creates an index of all files in all drives.',
     usage: 'indexall',
     async execute() {
-        const drives = await db.getAll({ tagOnly:false });
+        const drives = await db.getAll({ tagOnly:false, filter: () => true });
 
         const indexedFiles = [];
         
